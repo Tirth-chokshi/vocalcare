@@ -25,7 +25,7 @@ export default function SignIn() {
       if (result?.error) {
         setError(result.error)
       } else if (result?.ok) {
-        router.push('/') // Redirect to home page or dashboard
+        router.push('/dashboard')
       }
     } catch (err) {
       console.error('Sign in error:', err)
@@ -90,7 +90,7 @@ export default function SignIn() {
         {error && <p className="mt-2 text-center text-sm text-red-600">{error}</p>}
         <div className="text-sm text-center">
           <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Don't have an account? Sign up
+            Don&apos;t have an account? Sign up
           </Link>
         </div>
       </div>

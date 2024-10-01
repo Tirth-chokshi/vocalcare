@@ -1,12 +1,13 @@
+import ClientSessionProvider from "@/components/ClientSessionProvider";
 import localFont from "next/font/local";
 import "./globals.css";
-import SessionProvider from "@/components/SessionProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -19,12 +20,14 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  console.log("RootLayout - Rendering");
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <SessionProvider>{children}</SessionProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ClientSessionProvider>
+          {console.log("RootLayout - ClientSessionProvider rendered")}
+          {children}
+        </ClientSessionProvider>
       </body>
     </html>
   );
