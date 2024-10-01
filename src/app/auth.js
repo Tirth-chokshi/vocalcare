@@ -44,7 +44,6 @@ export const authOptions = {
       }
     })
   ],
-  callbacks: {
     async jwt({ token, user }) {
       console.log("JWT callback - token:", JSON.stringify(token, null, 2))
       console.log("JWT callback - user:", JSON.stringify(user, null, 2))
@@ -61,12 +60,11 @@ export const authOptions = {
       session.user.role = token.role;
       console.log("Session callback - output session:", JSON.stringify(session, null, 2))
       return session;
-    }
-  },
+    },
   pages: {
     signIn: '/signin',
   },
-  debug: process.env.NODE_ENV === 'development',
+  // debug: process.env.NODE_ENV === 'development',
 }
 
 export const handler = NextAuth(authOptions)
