@@ -1,4 +1,4 @@
-import ClientSessionProvider from "@/components/ClientSessionProvider";
+import SessionWrapper from "@/components/SessionWrapper";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -20,14 +20,10 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  console.log("RootLayout - Rendering");
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ClientSessionProvider>
-          {console.log("RootLayout - ClientSessionProvider rendered")}
-          {children}
-        </ClientSessionProvider>
+        <SessionWrapper>{children}</SessionWrapper>
       </body>
     </html>
   );
