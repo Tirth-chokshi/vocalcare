@@ -1,3 +1,4 @@
+"use client"
 import { getServerSession } from "next-auth/next"
 // import { authOptions } from "@/app/auth"
 import { redirect } from "next/navigation"

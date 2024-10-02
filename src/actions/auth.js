@@ -33,7 +33,7 @@ export async function signUp(formData) {
         email,
         username,
         password: hashedPassword,
-        role: 'user',
+        role: 'admin',
       },
     })
 
