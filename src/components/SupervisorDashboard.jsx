@@ -1,41 +1,78 @@
-"use client"
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { fetchTherapists, fetchPatients, allocatePatientToTherapist } from '@/actions/actions';
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
+import { fetchTherapists, fetchPatients, allocatePatientToTherapist, fetchTherapyPlans, fetchClinicalRatings, reviewTherapyPlan } from '@/actions/actions'
 
 export default function SupervisorDashboard() {
-    const [therapists, setTherapists] = useState([]);
-    const [patients, setPatients] = useState([]);
-    const [selectedPatient, setSelectedPatient] = useState(null);
-    const [selectedTherapist, setSelectedTherapist] = useState(null);
+    const [therapists, setTherapists] = useState([])
+    const [patients, setPatients] = useState([])
+    const [therapyPlans, setTherapyPlans] = useState([])
+    const [clinicalRatings, setClinicalRatings] = useState([])
+    const [selectedPatient, setSelectedPatient] = useState(null)
+    const [selectedTherapist, setSelectedTherapist] = useState(null)
+    const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
+    const [selectedPlan, setSelectedPlan] = useState(null)
+    const [reviewComment, setReviewComment] = useState('')
+    const [ratingScore, setRatingScore] = useState(0)
 
     useEffect(() => {
         const loadData = async () => {
-            const therapistsData = await fetchTherapists();
-            const patientsData = await fetchPatients();
-            setTherapists(therapistsData);
-            setPatients(patientsData);
-        };
-        loadData();
-    }, []);
+            const therapistsData = await fetchTherapists()
+            const patientsData = await fetchPatients()
+            const therapyPlansData = await fetchTherapyPlans()
+            const clinicalRatingsData = await fetchClinicalRatings()
+            setTherapists(therapistsData)
+            setPatients(patientsData)
+            setTherapyPlans(therapyPlansData)
+            setClinicalRatings(clinicalRatingsData)
+        }
+        loadData()
+    }, [])
 
     const handleAllocate = async () => {
         if (selectedPatient && selectedTherapist) {
-            const result = await allocatePatientToTherapist(selectedPatient, selectedTherapist);
+            const result = await allocatePatientToTherapist(selectedPatient, selectedTherapist)
             if (result.success) {
-                alert('Patient allocated successfully');
-                // Refresh patient list
-                const patientsData = await fetchPatients();
-                setPatients(patientsData);
+                alert('Patient allocated successfully')
+                const patientsData = await fetchPatients()
+                setPatients(patientsData)
             } else {
-                alert('Failed to allocate patient: ' + result.error);
+                alert('Failed to allocate patient: ' + result.error)
             }
         } else {
-            alert('Please select both a patient and a therapist');
+            alert('Please select both a patient and a therapist')
         }
-    };
+    }
+
+    const handleReviewClick = (plan) => {
+        setSelectedPlan(plan)
+        setReviewDialogOpen(true)
+    }
+
+    const handleReviewSubmit = async () => {
+        if (selectedPlan && reviewComment && ratingScore) {
+            const result = await reviewTherapyPlan(selectedPlan.id, reviewComment, ratingScore)
+            if (result.success) {
+                alert('Therapy plan reviewed successfully')
+                setReviewDialogOpen(false)
+                setReviewComment('')
+                setRatingScore(0)
+            
+                const therapyPlansData = await fetchTherapyPlans()
+                const clinicalRatingsData = await fetchClinicalRatings()
+                setTherapyPlans(therapyPlansData)
+                setClinicalRatings(clinicalRatingsData)
+            } else {
+                alert('Failed to review therapy plan: ' + result.error)
+            }
+        } else {
+            alert('Please provide a review comment and rating score')
+        }
+    }
 
     return (
         <div className="p-6">
@@ -94,15 +131,16 @@ export default function SupervisorDashboard() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {/* This would be populated with actual therapy plans */}
-                                <TableRow>
-                                    <TableCell>Sarah</TableCell>
-                                    <TableCell>John Doe</TableCell>
-                                    <TableCell>Pending Review</TableCell>
-                                    <TableCell>
-                                        <Button variant="outline">Review</Button>
-                                    </TableCell>
-                                </TableRow>
+                                {therapyPlans.map((plan) => (
+                                    <TableRow key={plan.id}>
+                                        <TableCell>{plan.therapist.user.username}</TableCell>
+                                        <TableCell>{plan.patient.user.username}</TableCell>
+                                        <TableCell>{plan.status}</TableCell>
+                                        <TableCell>
+                                            <Button variant="outline" onClick={() => handleReviewClick(plan)}>Review</Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
                             </TableBody>
                         </Table>
                     </CardContent>
@@ -118,25 +156,56 @@ export default function SupervisorDashboard() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Therapist</TableHead>
+                                <TableHead>Patient</TableHead>
                                 <TableHead>Rating</TableHead>
                                 <TableHead>Date</TableHead>
-                                <TableHead>Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {/* This would be populated with actual clinical ratings */}
-                            <TableRow>
-                                <TableCell>Sarah</TableCell>
-                                <TableCell>4.5/5</TableCell>
-                                <TableCell>2024-05-01</TableCell>
-                                <TableCell>
-                                    <Button variant="outline">View Details</Button>
-                                </TableCell>
-                            </TableRow>
+                            {clinicalRatings.map((rating) => (
+                                <TableRow key={rating.id}>
+                                    <TableCell>{rating.therapyPlan.therapist.user.username}</TableCell>
+                                    <TableCell>{rating.therapyPlan.patient.user.username}</TableCell>
+                                    <TableCell>{rating.ratingScore}/5</TableCell>
+                                    <TableCell>{new Date(rating.ratingDate).toLocaleDateString()}</TableCell>
+                                </TableRow>
+                            ))}
                         </TableBody>
                     </Table>
                 </CardContent>
             </Card>
+
+            <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Review Therapy Plan</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <h3 className="font-semibold mb-2">Therapist: {selectedPlan?.therapist.user.username}</h3>
+                        <h3 className="font-semibold mb-2">Patient: {selectedPlan?.patient.user.username}</h3>
+                        <h3 className="font-semibold mb-2">Goals: {selectedPlan?.goals}</h3>
+                        <h3 className="font-semibold mb-2">Activities: {selectedPlan?.activities}</h3>
+                        <Textarea
+                            placeholder="Enter your review comments here..."
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            className="mb-4"
+                        />
+                        <Input
+                            type="number"
+                            placeholder="Rating Score (1-5)"
+                            min="1"
+                            max="5"
+                            value={ratingScore}
+                            onChange={(e) => setRatingScore(parseInt(e.target.value))}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleReviewSubmit}>Submit Review</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
-    );
+    )
 }
