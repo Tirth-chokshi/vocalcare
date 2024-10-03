@@ -112,3 +112,62 @@ export async function allocatePatientToTherapist(patientId, therapistId) {
     return { success: false, error: error.message }
   }
 }
+
+export async function fetchTherapyPlans() {
+  try {
+    const therapyPlans = await prisma.therapyPlan.findMany({
+      where: { status: 'Pending Review' },
+      include: {
+        therapist: { include: { user: true } },
+        patient: { include: { user: true } },
+      },
+    });
+    return therapyPlans;
+  } catch (error) {
+    console.error('Error fetching therapy plans:', error);
+    return [];
+  }
+}
+
+export async function fetchClinicalRatings() {
+  try {
+    const clinicalRatings = await prisma.clinicalRating.findMany({
+      include: {
+        therapyPlan: {
+          include: {
+            therapist: { include: { user: true } },
+          },
+        },
+      },
+      orderBy: { ratingDate: 'desc' },
+      take: 10, // Limit to 10 most recent ratings
+    });
+    return clinicalRatings;
+  } catch (error) {
+    console.error('Error fetching clinical ratings:', error);
+    return [];
+  }
+}
+
+export async function reviewTherapyPlan(planId, reviewComment) {
+  try {
+    const updatedPlan = await prisma.therapyPlan.update({
+      where: { id: parseInt(planId) },
+      data: {
+        status: 'Reviewed',
+        ratings: {
+          create: {
+            feedback: reviewComment,
+            ratingScore: 0, // You might want to add a rating score input in the UI
+            ratingDate: new Date(),
+            supervisor: { connect: { id: 1 } }, // You'll need to pass the supervisor ID
+          },
+        },
+      },
+    });
+    return { success: true, plan: updatedPlan };
+  } catch (error) {
+    console.error('Error reviewing therapy plan:', error);
+    return { success: false, error: error.message };
+  }
+}
