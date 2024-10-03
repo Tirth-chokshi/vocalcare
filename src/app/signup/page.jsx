@@ -7,6 +7,7 @@ import { signUp } from '@/actions/auth'
 
 export default function SignUp() {
     const [error, setError] = useState(null)
+    const [isAdmin, setIsAdmin] = useState(false)
     const router = useRouter()
 
     const handleSubmit = async (formData) => {
@@ -68,8 +69,20 @@ export default function SignUp() {
                                 type="password"
                                 autoComplete="new-password"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                                 placeholder="Password"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="admin-code" className="sr-only">
+                                Admin Code
+                            </label>
+                            <input
+                                id="admin-code"
+                                name="adminCode"
+                                type="password"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                placeholder="Admin Code (optional)"
                             />
                         </div>
                     </div>

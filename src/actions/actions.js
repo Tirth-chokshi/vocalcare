@@ -1,16 +1,13 @@
 'use server'
+import { PrismaClient } from '@prisma/client'
 
-import prisma from "@/lib/prisma"
+const prisma = new PrismaClient()
 
-export async function getUser(userEmail){
-    try {
-        const findUser = await prisma.user.findFirst({
-            where: {
-                email: userEmail
-            }
-        })
-        console.log(findUser)
-    } catch (error) {
-        
-    }
+export async function getUserRoleByEmail(email) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { role: true }
+  })
+
+  return user?.role
 }

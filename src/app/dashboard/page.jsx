@@ -1,18 +1,75 @@
 "use client"
-import { getServerSession } from "next-auth/next"
-// import { authOptions } from "@/app/auth"
-import { redirect } from "next/navigation"
+import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { getUserRoleByEmail } from '@/actions/actions'
 
-export default async function Dashboard() {
-  const session = await getServerSession()
+const PatientDashboard = () => <div>Patient Dashboard</div>;
+const TherapistDashboard = () => <div>Therapist Dashboard</div>;
+const SupervisorDashboard = () => <div>Supervisor Dashboard</div>;
+const AdminDashboard = () => <div>Admin Dashboard</div>;
 
-  if (!session) {
-    return <h1>auth not done</h1>
+export default function Dashboard() {
+  const { data: session, status } = useSession();
+  const [userRole, setUserRole] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchUserRole() {
+      if (session?.user?.email) {
+        try {
+          const role = await getUserRoleByEmail(session.user.email);
+          setUserRole(role);
+        } catch (err) {
+          setError('Failed to fetch user role');
+          console.error(err);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    if (status === 'authenticated') {
+      fetchUserRole();
+    } else if (status === 'unauthenticated') {
+      setIsLoading(false);
+    }
+  }, [session, status]);
+
+  if (status === 'loading' || isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (status === 'unauthenticated') {
+    return <div>Access Denied. Please sign in.</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
+  let DashboardComponent;
+  switch (userRole) {
+    case 'patient':
+      DashboardComponent = PatientDashboard;
+      break;
+    case 'therapist':
+      DashboardComponent = TherapistDashboard;
+      break;
+    case 'supervisor':
+      DashboardComponent = SupervisorDashboard;
+      break;
+    case 'admin':
+      DashboardComponent = AdminDashboard;
+      break;
+    default:
+      return <div>Invalid user role</div>;
   }
 
   return (
-    <h1>
-      Welcome, {session.user.email}  - Role: {session.user.role}
-    </h1>
-  )
+    <div className="container mx-auto p-4">
+      <p className="mb-4">Welcome, {session.user.email} - Role: {userRole}</p>
+      <DashboardComponent />
+    </div>
+  );
 }
