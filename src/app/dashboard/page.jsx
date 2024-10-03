@@ -2,11 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { getUserRoleByEmail } from '@/actions/actions'
-
-const PatientDashboard = () => <div>Patient Dashboard</div>;
-const TherapistDashboard = () => <div>Therapist Dashboard</div>;
-const SupervisorDashboard = () => <div>Supervisor Dashboard</div>;
-const AdminDashboard = () => <div>Admin Dashboard</div>;
+import AdminDashboard from '@/components/AdminDashboard';
+import SupervisorDashboard from '@/components/SupervisorDashboard';
+import PatientDashboard from '@/components/PatientDashboard';
+import TherapistDashboard from '@/components/TherapistDashboard';
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
