@@ -28,9 +28,9 @@ export async function createUser(formData) {
         email,
         password: hashedPassword,
         role,
-        [role]: { create: {} }, // This creates the related role-specific record
+        [role]: { create: {} },
       },
-      include: { [role]: true }, // This includes the created role-specific record in the response
+      include: { [role]: true },
     })
 
     return { success: true, user }
@@ -104,7 +104,7 @@ export async function allocatePatientToTherapist(patientId, therapistId) {
 export async function fetchTherapyPlans() {
   try {
     const therapyPlans = await prisma.therapyPlan.findMany({
-      where: { status: 'Pending Review' },
+      where: { status: 'In Progress' },
       include: {
         therapist: { 
           include: { 
@@ -170,7 +170,7 @@ export async function fetchClinicalRatings() {
         }
       },
       orderBy: { ratingDate: 'desc' },
-      take: 10, // Limit to 10 most recent ratings
+      take: 10,
     });
     return clinicalRatings;
   } catch (error) {

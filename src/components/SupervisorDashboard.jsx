@@ -1,84 +1,85 @@
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { fetchTherapists, fetchPatients, allocatePatientToTherapist, fetchTherapyPlans, fetchClinicalRatings, reviewTherapyPlan } from '@/actions/actions'
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { fetchTherapists, fetchPatients, allocatePatientToTherapist, fetchTherapyPlans, fetchClinicalRatings, reviewTherapyPlan } from '@/actions/actions';
+import PatientProgress from './PatientProgress';
 
 export default function SupervisorDashboard() {
-    const [therapists, setTherapists] = useState([])
-    const [patients, setPatients] = useState([])
-    const [therapyPlans, setTherapyPlans] = useState([])
-    const [clinicalRatings, setClinicalRatings] = useState([])
-    const [selectedPatient, setSelectedPatient] = useState(null)
-    const [selectedTherapist, setSelectedTherapist] = useState(null)
-    const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
-    const [selectedPlan, setSelectedPlan] = useState(null)
-    const [reviewComment, setReviewComment] = useState('')
-    const [ratingScore, setRatingScore] = useState(0)
+    const [therapists, setTherapists] = useState([]);
+    const [patients, setPatients] = useState([]);
+    const [therapyPlans, setTherapyPlans] = useState([]);
+    const [clinicalRatings, setClinicalRatings] = useState([]);
+    const [selectedPatient, setSelectedPatient] = useState(null);
+    const [selectedTherapist, setSelectedTherapist] = useState(null);
+    const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState(null);
+    const [reviewComment, setReviewComment] = useState('');
+    const [ratingScore, setRatingScore] = useState(0);
 
     useEffect(() => {
         const loadData = async () => {
-            const therapistsData = await fetchTherapists()
-            const patientsData = await fetchPatients()
-            const therapyPlansData = await fetchTherapyPlans()
-            const clinicalRatingsData = await fetchClinicalRatings()
-            setTherapists(therapistsData)
-            setPatients(patientsData)
-            setTherapyPlans(therapyPlansData)
-            setClinicalRatings(clinicalRatingsData)
-        }
-        loadData()
-    }, [])
+            const therapistsData = await fetchTherapists();
+            const patientsData = await fetchPatients();
+            const therapyPlansData = await fetchTherapyPlans();
+            const clinicalRatingsData = await fetchClinicalRatings();
+            setTherapists(therapistsData);
+            setPatients(patientsData);
+            setTherapyPlans(therapyPlansData);
+            setClinicalRatings(clinicalRatingsData);
+        };
+        loadData();
+    }, []);
 
     const handleAllocate = async () => {
         if (selectedPatient && selectedTherapist) {
-            const result = await allocatePatientToTherapist(selectedPatient, selectedTherapist)
+            const result = await allocatePatientToTherapist(selectedPatient, selectedTherapist);
             if (result.success) {
-                alert('Patient allocated successfully')
-                const patientsData = await fetchPatients()
-                setPatients(patientsData)
+                alert('Patient allocated successfully');
+                const patientsData = await fetchPatients();
+                setPatients(patientsData);
             } else {
-                alert('Failed to allocate patient: ' + result.error)
+                alert('Failed to allocate patient: ' + result.error);
             }
         } else {
-            alert('Please select both a patient and a therapist')
+            alert('Please select both a patient and a therapist');
         }
-    }
+    };
 
     const handleReviewClick = (plan) => {
-        setSelectedPlan(plan)
-        setReviewDialogOpen(true)
-    }
+        setSelectedPlan(plan);
+        setReviewDialogOpen(true);
+    };
 
     const handleReviewSubmit = async () => {
         if (selectedPlan && reviewComment && ratingScore) {
-            const result = await reviewTherapyPlan(selectedPlan.id, reviewComment, ratingScore)
+            const result = await reviewTherapyPlan(selectedPlan.id, reviewComment, ratingScore, 1); // Assuming supervisor ID is 1
             if (result.success) {
-                alert('Therapy plan reviewed successfully')
-                setReviewDialogOpen(false)
-                setReviewComment('')
-                setRatingScore(0)
-            
-                const therapyPlansData = await fetchTherapyPlans()
-                const clinicalRatingsData = await fetchClinicalRatings()
-                setTherapyPlans(therapyPlansData)
-                setClinicalRatings(clinicalRatingsData)
+                alert('Therapy plan reviewed successfully');
+                setReviewDialogOpen(false);
+                setReviewComment('');
+                setRatingScore(0);
+                // Refresh therapy plans and clinical ratings
+                const therapyPlansData = await fetchTherapyPlans();
+                const clinicalRatingsData = await fetchClinicalRatings();
+                setTherapyPlans(therapyPlansData);
+                setClinicalRatings(clinicalRatingsData);
             } else {
-                alert('Failed to review therapy plan: ' + result.error)
+                alert('Failed to review therapy plan: ' + result.error);
             }
         } else {
-            alert('Please provide a review comment and rating score')
+            alert('Please provide a review comment and rating score');
         }
-    }
+    };
 
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-6">Supervisor Dashboard</h1>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>Patient Allocation</CardTitle>
@@ -147,6 +148,8 @@ export default function SupervisorDashboard() {
                 </Card>
             </div>
 
+            <PatientProgress />
+
             <Card className="mt-6">
                 <CardHeader>
                     <CardTitle>Recent Clinical Ratings</CardTitle>
@@ -207,5 +210,5 @@ export default function SupervisorDashboard() {
                 </DialogContent>
             </Dialog>
         </div>
-    )
+    );
 }
