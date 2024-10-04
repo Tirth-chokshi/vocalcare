@@ -6,7 +6,7 @@ import AdminDashboard from '@/components/AdminDashboard';
 import SupervisorDashboard from '@/components/SupervisorDashboard';
 import PatientDashboard from '@/components/PatientDashboard';
 import TherapistDashboard from '@/components/TherapistDashboard';
-
+import MainDashboardNavbar from '@/components/Navbar';
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [userRole, setUserRole] = useState(null);
@@ -66,9 +66,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <p className="mb-4">Welcome, {session.user.email} - Role: {userRole}</p>
-      <DashboardComponent />
-    </div>
+    <>
+      <div className="flex flex-col h-screen">
+        <MainDashboardNavbar userRole={userRole} />
+        <div className="flex-1 overflow-auto">
+          <div className="container mx-auto p-4">
+            <DashboardComponent />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

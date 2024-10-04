@@ -100,21 +100,38 @@ export async function allocatePatientToTherapist(patientId, therapistId) {
     return { success: false, error: error.message };
   }
 }
+export async function fetchAllocatedPatients(therapistId) {
+  try {
+    const patients = await prisma.patient.findMany({
+      where: { 
+        therapistId: therapistId,
+        NOT: { therapistId: null } // Ensures only allocated patients are returned
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          }
+        }
+      }
+    });
+    return patients;
+  } catch (error) {
+    console.error('Error fetching allocated patients:', error);
+    return [];
+  }
+}
 
-export async function fetchTherapyPlans() {
+export async function fetchTherapyPlans(therapistId) {
   try {
     const therapyPlans = await prisma.therapyPlan.findMany({
-      where: { status: 'In Progress' },
+      where: { 
+        therapistId: therapistId,
+        status: 'In Progress'
+      },
       include: {
-        therapist: { 
-          include: { 
-            user: {
-              select: {
-                username: true,
-              }
-            } 
-          }
-        },
         patient: { 
           include: { 
             user: {
@@ -179,7 +196,7 @@ export async function fetchClinicalRatings() {
   }
 }
 
-export async function reviewTherapyPlan(planId, feedback, ratingScore, supervisorId) {
+export async function reviewTherapyPlan(planId, reviewComment, ratingScore) {
   try {
     const updatedPlan = await prisma.therapyPlan.update({
       where: { id: parseInt(planId) },
@@ -187,10 +204,10 @@ export async function reviewTherapyPlan(planId, feedback, ratingScore, superviso
         status: 'Reviewed',
         ratings: {
           create: {
-            feedback,
+            feedback: reviewComment,
             ratingScore: parseInt(ratingScore),
             ratingDate: new Date(),
-            supervisor: { connect: { id: supervisorId } },
+            supervisorId: 1, // Replace with actual supervisor ID or fetch from session
           },
         },
       },
@@ -219,5 +236,132 @@ export async function fetchSupervisors() {
   } catch (error) {
     console.error('Error fetching supervisors:', error)
     return []
+  }
+}
+export async function fetchAssignedPatients(therapistId) {
+  try {
+    const patients = await prisma.patient.findMany({
+      where: { therapistId: therapistId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          }
+        }
+      }
+    });
+    return patients;
+  } catch (error) {
+    console.error('Error fetching assigned patients:', error);
+    return [];
+  }
+}
+
+export async function createTherapyPlan(patientId, goals, activities) {
+  try {
+    const newPlan = await prisma.therapyPlan.create({
+      data: {
+        patientId: parseInt(patientId),
+        therapistId: 1, // Replace with actual therapist ID
+        goals,
+        activities,
+        startDate: new Date(),
+        endDate: new Date(new Date().setMonth(new Date().getMonth() + 3)), // 3 months from now
+        status: 'In Progress',
+      },
+    });
+    return { success: true, plan: newPlan };
+  } catch (error) {
+    console.error('Error creating therapy plan:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateTherapyPlan(planId, goals, activities, status) {
+  try {
+    const updatedPlan = await prisma.therapyPlan.update({
+      where: { id: parseInt(planId) },
+      data: { goals, activities, status },
+    });
+    return { success: true, plan: updatedPlan };
+  } catch (error) {
+    console.error('Error updating therapy plan:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function createTherapySession(patientId, duration, notes) {
+  try {
+    const newSession = await prisma.therapySession.create({
+      data: {
+        patientId: parseInt(patientId),
+        therapistId: 1, // Replace with actual therapist ID
+        planId: 1, // Replace with actual plan ID or fetch the latest plan for the patient
+        sessionDate: new Date(),
+        duration: parseInt(duration),
+        status: 'Completed',
+        progressNote: {
+          create: {
+            observations: notes,
+            recommendations: '', // Add recommendations if needed
+          }
+        }
+      },
+    });
+    return { success: true, session: newSession };
+  } catch (error) {
+    console.error('Error creating therapy session:', error);
+    return { success: false, error: error.message };
+  }
+}
+// In actions/actions.js
+
+export async function fetchOngoingTherapySessions() {
+  try {
+    const ongoingSessions = await prisma.therapySession.findMany({
+      where: { status: 'In Progress' },
+      include: {
+        therapist: { 
+          include: { 
+            user: {
+              select: {
+                username: true,
+              }
+            } 
+          }
+        },
+        patient: { 
+          include: { 
+            user: {
+              select: {
+                username: true,
+              }
+            } 
+          }
+        },
+      },
+    });
+    return ongoingSessions;
+  } catch (error) {
+    console.error('Error fetching ongoing therapy sessions:', error);
+    return [];
+  }
+}
+
+export async function reviewTherapySession(sessionId, reviewComment) {
+  try {
+    const updatedSession = await prisma.therapySession.update({
+      where: { id: parseInt(sessionId) },
+      data: {
+        supervisorReview: reviewComment,
+        // You might want to add a reviewDate or update the session status here
+      },
+    });
+    return { success: true, session: updatedSession };
+  } catch (error) {
+    console.error('Error reviewing therapy session:', error);
+    return { success: false, error: error.message };
   }
 }
