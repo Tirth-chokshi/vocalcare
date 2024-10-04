@@ -1,15 +1,10 @@
-"use client";
-import React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useSession, signOut } from "next-auth/react";
-import { Bell, User, LogOut } from "lucide-react";
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuLink,
-} from "@/components/ui/navigation-menu";
+"use client"
+import React, { useEffect } from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { useSession, signOut } from "next-auth/react"
+import { Bell, User, LogOut } from "lucide-react"
+import { useTheme } from "next-themes"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -17,47 +12,51 @@ import {
   DropdownMenuLabel,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ModeToggle } from "@/components/ModeToogle"; // Import the ModeToggle component
-
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { ModeToggle } from "@/components/ModeToogle"
 
 export default function MainDashboardNavbar({ userRole }) {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession()
+  const { theme, resolvedTheme } = useTheme()
+
+  useEffect(() => {
+    console.log('Current theme:', theme)
+    console.log('Resolved theme:', resolvedTheme)
+  }, [theme, resolvedTheme])
 
   if (status === "loading") {
-    return <p>Loading...</p>;
+    return <p>Loading...</p>
   }
 
   if (!session) {
-    return <p>User not authenticated</p>;
+    return <p>User not authenticated</p>
   }
 
   const handleLogout = async () => {
-    await signOut({ redirect: true, callbackUrl: "/signin" });
-  };
+    await signOut({ redirect: true, callbackUrl: "/signin" })
+  }
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow">
+    <header className="bg-background text-foreground shadow">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center">
           <Link href="/" className="flex items-center mr-6">
-            <Image
-              src="/path-to-your-logo.png"
-              alt="Logo"
-              width={40}
-              height={40}
-              className="transition-transform duration-300 hover:scale-110"
-            />
-            <span className="ml-2 text-xl font-bold text-gray-800 dark:text-white">
-              VocalCare
-            </span>
+            <div className="relative w-40 h-10">
+              <Image
+                src={resolvedTheme === 'dark' ? '/dark.jpg' : '/light.jpg'}
+                alt="VocalCare Logo"
+                fill
+                className="object-contain transition-transform duration-300 hover:scale-110"
+                priority
+              />
+            </div>
           </Link>
         </div>
 
         <div className="flex items-center space-x-4">
-          <ModeToggle /> 
+          <ModeToggle />
 
           <Button variant="ghost" size="icon" className="relative">
             <Bell size={20} />
@@ -108,5 +107,5 @@ export default function MainDashboardNavbar({ userRole }) {
         </div>
       </div>
     </header>
-  );
+  )
 }
