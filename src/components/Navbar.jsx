@@ -22,11 +22,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/ModeToogle"; // Import the ModeToggle component
 
-const navItems = [
-  { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Docs", href: "/docs" },
-];
 
 export default function MainDashboardNavbar({ userRole }) {
   const { data: session, status } = useSession();
@@ -56,30 +51,13 @@ export default function MainDashboardNavbar({ userRole }) {
               className="transition-transform duration-300 hover:scale-110"
             />
             <span className="ml-2 text-xl font-bold text-gray-800 dark:text-white">
-              Your App Name
+              VocalCare
             </span>
           </Link>
-          <NavigationMenu>
-            <NavigationMenuList>
-              {navItems.map((item) => (
-                <NavigationMenuItem key={item.name}>
-                  <Link href={item.href} legacyBehavior passHref>
-                    <NavigationMenuLink
-                      className={
-                        "px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
-                      }
-                    >
-                      {item.name}
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
         </div>
 
         <div className="flex items-center space-x-4">
-          <ModeToggle /> {/* Add ModeToggle here */}
+          <ModeToggle /> 
 
           <Button variant="ghost" size="icon" className="relative">
             <Bell size={20} />
