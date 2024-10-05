@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { createUser } from '@/actions/actions'; // Assuming you've placed the createUser function in this file
 
 export default function CreateUser() {
     const [newUser, setNewUser] = useState({
@@ -11,37 +12,40 @@ export default function CreateUser() {
         email: '',
         password: '',
         role: '',
-        // Patient fields
         dateOfBirth: '',
         diagnosis: '',
-        // Therapist fields
         specialization: '',
         yearsExperience: '',
-        // Supervisor fields
         department: '',
-        // Admin fields
         accessLevel: '',
     });
     const [message, setMessage] = useState('');
 
     const handleCreateUser = async (e) => {
         e.preventDefault();
-        // Here you would typically call an API to create the user
-        // For now, we'll just log the user data and show a success message
-        console.log('Creating user:', newUser);
-        setMessage('User created successfully');
-        setNewUser({
-            username: '',
-            email: '',
-            password: '',
-            role: '',
-            dateOfBirth: '',
-            diagnosis: '',
-            specialization: '',
-            yearsExperience: '',
-            department: '',
-            accessLevel: '',
+        const formData = new FormData();
+        Object.keys(newUser).forEach(key => {
+            formData.append(key, newUser[key]);
         });
+
+        const result = await createUser(formData);
+        if (result.success) {
+            setMessage('User created successfully');
+            setNewUser({
+                username: '',
+                email: '',
+                password: '',
+                role: '',
+                dateOfBirth: '',
+                diagnosis: '',
+                specialization: '',
+                yearsExperience: '',
+                department: '',
+                accessLevel: '',
+            });
+        } else {
+            setMessage(`Failed to create user: ${result.error}`);
+        }
     };
 
     const renderRoleSpecificFields = () => {

@@ -13,22 +13,63 @@ export async function getUserRoleByEmail(email) {
   return user?.role
 }
 
+
 export async function createUser(formData) {
   const username = formData.get('username')
   const email = formData.get('email')
   const password = formData.get('password')
   const role = formData.get('role')
 
+  // Additional fields based on role
+  const dateOfBirth = formData.get('dateOfBirth')
+  const diagnosis = formData.get('diagnosis')
+  const specialization = formData.get('specialization')
+  const yearsExperience = formData.get('yearsExperience')
+  const department = formData.get('department')
+  const accessLevel = formData.get('accessLevel')
+
   const hashedPassword = await bcrypt.hash(password, 10)
 
   try {
+    const userData = {
+      username,
+      email,
+      password: hashedPassword,
+      role,
+    }
+
+    let roleData = {}
+
+    switch (role) {
+      case 'patient':
+        roleData = {
+          dateOfBirth: new Date(dateOfBirth),
+          diagnosis,
+        }
+        break
+      case 'therapist':
+        roleData = {
+          specialization,
+          yearsExperience: parseInt(yearsExperience),
+        }
+        break
+      case 'supervisor':
+      case 'admin':
+        roleData = {
+          department,
+        }
+        if (role === 'admin') {
+          roleData.accessLevel = accessLevel
+        }
+        break
+    }
+
     const user = await prisma.user.create({
       data: {
-        username,
-        email,
-        password: hashedPassword,
-        role,
-        [role]: { create: {} },
+        ...userData,
+        [role]: {
+          create: roleData,
+        },
       },
       include: { [role]: true },
     })
@@ -39,6 +80,7 @@ export async function createUser(formData) {
     return { success: false, error: error.message }
   }
 }
+
 export async function fetchTherapists() {
   try {
     const therapists = await prisma.user.findMany({
