@@ -41,47 +41,57 @@ export async function createUser(formData) {
 }
 export async function fetchTherapists() {
   try {
-    const therapists = await prisma.therapist.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-          }
-        }
+    const therapists = await prisma.user.findMany({
+      where: { role: 'therapist' },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        therapist: true
       }
     });
-    return therapists;
+    return therapists.map(t => ({
+      id: t.id,
+      username: t.username,
+      email: t.email,
+      ...t.therapist
+    }));
   } catch (error) {
     console.error('Error fetching therapists:', error);
     return [];
   }
 }
 
+
 export async function fetchPatients() {
   try {
-    const patients = await prisma.patient.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-          }
-        },
-        assignedTherapist: {
+    const patients = await prisma.user.findMany({
+      where: { role: 'patient' },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        patient: {
           include: {
-            user: {
-              select: {
-                username: true,
+            assignedTherapist: {
+              include: {
+                user: {
+                  select: {
+                    username: true,
+                  }
+                }
               }
             }
           }
         }
       }
     });
-    return patients;
+    return patients.map(p => ({
+      id: p.id,
+      username: p.username,
+      email: p.email,
+      ...p.patient
+    }));
   } catch (error) {
     console.error('Error fetching patients:', error);
     return [];
@@ -221,23 +231,27 @@ export async function reviewTherapyPlan(planId, reviewComment, ratingScore) {
 
 export async function fetchSupervisors() {
   try {
-    const supervisors = await prisma.supervisor.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-          }
-        }
+    const supervisors = await prisma.user.findMany({
+      where: { role: 'supervisor' },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        supervisor: true
       }
-    })
-    return supervisors
+    });
+    return supervisors.map(s => ({
+      id: s.id,
+      username: s.username,
+      email: s.email,
+      ...s.supervisor
+    }));
   } catch (error) {
-    console.error('Error fetching supervisors:', error)
-    return []
+    console.error('Error fetching supervisors:', error);
+    return [];
   }
 }
+
 export async function fetchAssignedPatients(therapistId) {
   try {
     const patients = await prisma.patient.findMany({

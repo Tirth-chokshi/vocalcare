@@ -22,8 +22,6 @@ export default function MainDashboardNavbar({ userRole }) {
   const { theme, resolvedTheme } = useTheme()
 
   useEffect(() => {
-    console.log('Current theme:', theme)
-    console.log('Resolved theme:', resolvedTheme)
   }, [theme, resolvedTheme])
 
   if (status === "loading") {
@@ -53,6 +51,7 @@ export default function MainDashboardNavbar({ userRole }) {
               />
             </div>
           </Link>
+          <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
         </div>
 
         <div className="flex items-center space-x-4">
