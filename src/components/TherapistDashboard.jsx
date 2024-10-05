@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { fetchAllocatedPatients, fetchTherapyPlans, createTherapyPlan, createTherapySession } from '@/actions/actions';
+import { fetchAllocatedPatients} from '@/actions/actions';
 import PatientProgress from '@/components/PatientProgress';
 
 export default function TherapistDashboard() {
@@ -63,13 +63,13 @@ export default function TherapistDashboard() {
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-6">Therapist Dashboard</h1>
-            
+{/*             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>Allocated Patients</CardTitle>
                     </CardHeader>
-                    {/* <CardContent>
+                    <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -97,7 +97,7 @@ export default function TherapistDashboard() {
                                 ))}
                             </TableBody>
                         </Table>
-                    </CardContent> */}
+                    </CardContent>
                 </Card>
 
                 <Card>
@@ -125,10 +125,10 @@ export default function TherapistDashboard() {
                         </Table>
                     </CardContent>
                 </Card>
-            </div>
+            </div> */}
 
             <PatientProgress allocatedPatients={allocatedPatients} />
-            <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
+            {/* <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Create Therapy Plan</DialogTitle>
@@ -181,7 +181,8 @@ export default function TherapistDashboard() {
                         <Button onClick={handleCreateSession}>Record Session</Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog>
+            </Dialog> */}
+
         </div>
     );
 }

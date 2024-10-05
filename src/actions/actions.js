@@ -248,29 +248,6 @@ export async function fetchClinicalRatings() {
   }
 }
 
-export async function reviewTherapyPlan(planId, reviewComment, ratingScore) {
-  try {
-    const updatedPlan = await prisma.therapyPlan.update({
-      where: { id: parseInt(planId) },
-      data: {
-        status: 'Reviewed',
-        ratings: {
-          create: {
-            feedback: reviewComment,
-            ratingScore: parseInt(ratingScore),
-            ratingDate: new Date(),
-            supervisorId: 1, // Replace with actual supervisor ID or fetch from session
-          },
-        },
-      },
-    });
-    return { success: true, plan: updatedPlan };
-  } catch (error) {
-    console.error('Error reviewing therapy plan:', error);
-    return { success: false, error: error.message };
-  }
-}
-
 export async function fetchSupervisors() {
   try {
     const supervisors = await prisma.user.findMany({
@@ -293,131 +270,74 @@ export async function fetchSupervisors() {
     return [];
   }
 }
-
-export async function fetchAssignedPatients(therapistId) {
-  try {
-    const patients = await prisma.patient.findMany({
-      where: { therapistId: therapistId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-          }
-        }
-      }
-    });
-    return patients;
-  } catch (error) {
-    console.error('Error fetching assigned patients:', error);
-    return [];
-  }
-}
-
-export async function createTherapyPlan(patientId, goals, activities) {
-  try {
-    const newPlan = await prisma.therapyPlan.create({
-      data: {
-        patientId: parseInt(patientId),
-        therapistId: 1, // Replace with actual therapist ID
-        goals,
-        activities,
-        startDate: new Date(),
-        endDate: new Date(new Date().setMonth(new Date().getMonth() + 3)), // 3 months from now
-        status: 'In Progress',
-      },
-    });
-    return { success: true, plan: newPlan };
-  } catch (error) {
-    console.error('Error creating therapy plan:', error);
-    return { success: false, error: error.message };
-  }
-}
-
-export async function updateTherapyPlan(planId, goals, activities, status) {
+export async function approveTherapyPlan(planId) {
   try {
     const updatedPlan = await prisma.therapyPlan.update({
       where: { id: parseInt(planId) },
-      data: { goals, activities, status },
+      data: { status: 'approved' },
     });
     return { success: true, plan: updatedPlan };
   } catch (error) {
-    console.error('Error updating therapy plan:', error);
+    console.error('Error approving therapy plan:', error);
     return { success: false, error: error.message };
   }
 }
-
-export async function createTherapySession(patientId, duration, notes) {
+export async function fetchTherapyPlansForReview() {
   try {
-    const newSession = await prisma.therapySession.create({
-      data: {
-        patientId: parseInt(patientId),
-        therapistId: 1, // Replace with actual therapist ID
-        planId: 1, // Replace with actual plan ID or fetch the latest plan for the patient
-        sessionDate: new Date(),
-        duration: parseInt(duration),
-        status: 'Completed',
-        progressNote: {
-          create: {
-            observations: notes,
-            recommendations: '', // Add recommendations if needed
-          }
-        }
+    const therapyPlans = await prisma.therapyPlan.findMany({
+      where: {
+        status: 'pending'
       },
-    });
-    return { success: true, session: newSession };
-  } catch (error) {
-    console.error('Error creating therapy session:', error);
-    return { success: false, error: error.message };
-  }
-}
-// In actions/actions.js
-
-export async function fetchOngoingTherapySessions() {
-  try {
-    const ongoingSessions = await prisma.therapySession.findMany({
-      where: { status: 'In Progress' },
       include: {
-        therapist: { 
-          include: { 
+        patient: {
+          include: {
             user: {
               select: {
                 username: true,
               }
-            } 
+            }
           }
         },
-        patient: { 
-          include: { 
+        therapist: {
+          include: {
             user: {
               select: {
                 username: true,
               }
-            } 
+            }
           }
         },
       },
     });
-    return ongoingSessions;
+    return therapyPlans;
   } catch (error) {
-    console.error('Error fetching ongoing therapy sessions:', error);
-    return [];
+    console.error('Error fetching therapy plans for review:', error);
+    throw error;
   }
 }
 
-export async function reviewTherapySession(sessionId, reviewComment) {
+export async function submitTherapyPlanReview(planId, ratingScore, feedback) {
   try {
-    const updatedSession = await prisma.therapySession.update({
-      where: { id: parseInt(sessionId) },
+    // First, update the therapy plan status
+    const updatedPlan = await prisma.therapyPlan.update({
+      where: { id: parseInt(planId) },
+      data: { status: 'reviewed' },
+    });
+
+    // Then, create a new clinical rating
+    const newRating = await prisma.clinicalRating.create({
       data: {
-        supervisorReview: reviewComment,
-        // You might want to add a reviewDate or update the session status here
+        therapyPlanId: parseInt(planId),
+        supervisorId: 1,
+        ratingScore: parseInt(ratingScore),
+        feedback: feedback,
+        ratingDate: new Date(),
       },
     });
-    return { success: true, session: updatedSession };
+
+    return { success: true, plan: updatedPlan, rating: newRating };
   } catch (error) {
-    console.error('Error reviewing therapy session:', error);
+    console.error('Error submitting therapy plan review:', error);
     return { success: false, error: error.message };
   }
 }
