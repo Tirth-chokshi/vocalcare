@@ -3,6 +3,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useCallback } from 'react';
+import Image from 'next/image';
 
 const LandingPage = () => {
 
@@ -25,7 +26,7 @@ const LandingPage = () => {
             </Button>
           </div>
           <div className="md:w-1/2">
-            <img
+            <Image
               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoA7t0hXaMps7UiyZmyAKclXA5BEl0hcCGQg&s"
               alt="Speech Therapy Session"
               className="w-full h-full object-cover"

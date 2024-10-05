@@ -1,12 +1,18 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getUserRoleByEmail,getUserIdByEmail } from '@/actions/actions'
+import { getUserRoleByEmail, getUserIdByEmail } from '@/actions/actions'
 import AdminDashboard from '@/components/AdminDashboard';
 import SupervisorDashboard from '@/components/SupervisorDashboard';
 import PatientDashboard from '@/components/PatientDashboard';
 import TherapistDashboard from '@/components/TherapistDashboard';
 import MainDashboardNavbar from '@/components/Navbar';
+
+
+// Define SupervisorDashboardWrapper outside of the main component
+const SupervisorDashboardWrapper = ({ userId }) => <SupervisorDashboard userId={userId} />;
+SupervisorDashboardWrapper.displayName = 'SupervisorDashboardWrapper';
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [userRole, setUserRole] = useState(null);
@@ -59,8 +65,8 @@ export default function Dashboard() {
       DashboardComponent = TherapistDashboard;
       break;
     case 'supervisor':
-      DashboardComponent = () => <SupervisorDashboard userId={userId} />;
-    break;
+      DashboardComponent = () => SupervisorDashboardWrapper;
+      break;
     case 'admin':
       DashboardComponent = AdminDashboard;
       break;
