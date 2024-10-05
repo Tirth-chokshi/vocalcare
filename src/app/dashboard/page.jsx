@@ -11,7 +11,6 @@ import MainDashboardNavbar from '@/components/Navbar';
 
 // Define SupervisorDashboardWrapper outside of the main component
 const SupervisorDashboardWrapper = ({ userId }) => <SupervisorDashboard userId={userId} />;
-SupervisorDashboardWrapper.displayName = 'SupervisorDashboardWrapper';
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -65,7 +64,7 @@ export default function Dashboard() {
       DashboardComponent = TherapistDashboard;
       break;
     case 'supervisor':
-      DashboardComponent = () => SupervisorDashboardWrapper;
+      DashboardComponent = SupervisorDashboardWrapper;
       break;
     case 'admin':
       DashboardComponent = AdminDashboard;
