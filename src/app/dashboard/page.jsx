@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getUserRoleByEmail } from '@/actions/actions'
+import { getUserRoleByEmail,getUserIdByEmail } from '@/actions/actions'
 import AdminDashboard from '@/components/AdminDashboard';
 import SupervisorDashboard from '@/components/SupervisorDashboard';
 import PatientDashboard from '@/components/PatientDashboard';
@@ -12,13 +12,16 @@ export default function Dashboard() {
   const [userRole, setUserRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     async function fetchUserRole() {
       if (session?.user?.email) {
         try {
           const role = await getUserRoleByEmail(session.user.email);
+          const uId = await getUserIdByEmail(session.user.email);
           setUserRole(role);
+          setUserId(uId)
         } catch (err) {
           setError('Failed to fetch user role');
           console.error(err);
@@ -56,8 +59,8 @@ export default function Dashboard() {
       DashboardComponent = TherapistDashboard;
       break;
     case 'supervisor':
-      DashboardComponent = SupervisorDashboard;
-      break;
+      DashboardComponent = () => <SupervisorDashboard userId={userId} />;
+    break;
     case 'admin':
       DashboardComponent = AdminDashboard;
       break;

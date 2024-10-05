@@ -70,10 +70,10 @@ export default function MainDashboardNavbar({ userRole }) {
                 <Avatar className="h-8 w-8">
                   <AvatarImage
                     src={session.user.image}
-                    alt={session.user.name || "User"}
+                    alt={session.user.username || "User"}
                   />
                   <AvatarFallback>
-                    {session.user.name ? session.user.name.charAt(0) : "U"}
+                    {session.user.username ? session.user.username.charAt(0) : "U"}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -82,7 +82,7 @@ export default function MainDashboardNavbar({ userRole }) {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {session.user.name}
+                    {session.user.username}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {session.user.email}
@@ -96,6 +96,10 @@ export default function MainDashboardNavbar({ userRole }) {
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>Theme change</span>
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />

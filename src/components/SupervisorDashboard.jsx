@@ -11,7 +11,7 @@ import { Toaster, toast } from 'sonner';
 import { fetchTherapyPlansForReview, submitTherapyPlanReview } from '@/actions/actions';
 import { useSession } from 'next-auth/react';
 
-export default function SupervisorDashboard() {
+export default function SupervisorDashboard({userId}) {
     const {data: session, status} = useSession
   const [therapyPlans, setTherapyPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -39,7 +39,7 @@ export default function SupervisorDashboard() {
 
   const handleSubmitReview = async () => {
     try {
-      const result = await submitTherapyPlanReview(selectedPlan.id, review.ratingScore, review.feedback);
+      const result = await submitTherapyPlanReview(userId,selectedPlan.id, review.ratingScore, review.feedback);
       if (result.success) {
         toast.success('Therapy plan review submitted successfully');
         setIsReviewDialogOpen(false);

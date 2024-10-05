@@ -13,6 +13,29 @@ export async function getUserRoleByEmail(email) {
   return user?.role
 }
 
+export async function getUserIdByEmail(email) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      role: true,
+      supervisor: {
+        select: {
+          id: true
+        }
+      }
+    }
+  })
+
+  if (!user) return null;
+
+  if (user.role === 'supervisor' && user.supervisor) {
+    return user.supervisor.id;
+  }
+
+  return user.id;
+}
+
 
 export async function createUser(formData) {
   const username = formData.get('username')
@@ -316,7 +339,7 @@ export async function fetchTherapyPlansForReview() {
   }
 }
 
-export async function submitTherapyPlanReview(planId, ratingScore, feedback) {
+export async function submitTherapyPlanReview(userId,planId, ratingScore, feedback) {
   try {
     // First, update the therapy plan status
     const updatedPlan = await prisma.therapyPlan.update({
@@ -328,7 +351,7 @@ export async function submitTherapyPlanReview(planId, ratingScore, feedback) {
     const newRating = await prisma.clinicalRating.create({
       data: {
         therapyPlanId: parseInt(planId),
-        supervisorId: 1,
+        supervisorId: userId,
         ratingScore: parseInt(ratingScore),
         feedback: feedback,
         ratingDate: new Date(),
