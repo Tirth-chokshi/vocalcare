@@ -66,7 +66,7 @@ function DialogDetailView({ patient }) {
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>{patient.user?.username || 'Patient'}'s Details</DialogTitle>
+          <DialogTitle>{patient.user?.username || 'Patient'} Details</DialogTitle>
         </DialogHeader>
         <div className="mt-4 space-y-6">
           <div>
@@ -145,7 +145,7 @@ function SheetDetailView({ patient }) {
       </SheetTrigger>
       <SheetContent className="w-[400px] sm:w-[540px] md:w-[720px]">
         <SheetHeader>
-          <SheetTitle>{patient.user?.username || 'Patient'}'s Details</SheetTitle>
+          <SheetTitle>{patient.user?.username || 'Patient'} Details</SheetTitle>
         </SheetHeader>
         <div className="mt-4 space-y-6">
           <div>
