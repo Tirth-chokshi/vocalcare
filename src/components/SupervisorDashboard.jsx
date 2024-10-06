@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Toaster, toast } from 'sonner';
 import { fetchTherapyPlansForReview, submitTherapyPlanReview } from '@/actions/actions';
 import SupervisorPatientAllocation from './SupervisorPatientAllocation';
-// import ClinicalRatings from './ClinicalRatings';
+import ClinicalRatings from './ClinicalRatings';
 // import ProgressReport from './ProgressReport';
 
 export default function SupervisorDashboard({ userId }) {
@@ -158,8 +158,8 @@ export default function SupervisorDashboard({ userId }) {
             </Dialog>
 
             <SupervisorPatientAllocation/>
-            {/* <ClinicalRatings/>
-            <ProgressReport/> */}
+            <ClinicalRatings/>
+            {/* <ProgressReport/> */}
         </div>
     );
 }
