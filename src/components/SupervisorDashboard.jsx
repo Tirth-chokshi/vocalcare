@@ -58,7 +58,7 @@ export default function SupervisorDashboard({ userId }) {
     return (
         <div className="container mx-auto p-4">
             <Toaster />
-            <h1 className="text-2xl font-bold mb-6">Supervisor Dashboard {userId} </h1>
+            <h1 className="text-2xl font-bold mb-6">Supervisor Dashboard</h1>
             <Card>
                 <CardHeader>
                     <CardTitle>Therapy Plans for Review</CardTitle>
