@@ -520,3 +520,138 @@ export async function fetchPatientProgressData(page = 1, pageSize = 5) {
     return { success: false, error: error.message };
   }
 }
+export async function fetchDetailedUserData(userId, userType) {
+  try {
+    let userData;
+    switch (userType) {
+      case 'patient':
+        userData = await prisma.patient.findUnique({
+          where: { id: parseInt(userId) },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                lastLogin: true,
+              }
+            },
+            assignedTherapist: {
+              include: {
+                user: {
+                  select: {
+                    username: true,
+                    email: true,
+                  }
+                }
+              }
+            },
+            therapyPlans: {
+              include: {
+                therapySessions: {
+                  include: {
+                    progressNote: true
+                  }
+                }
+              }
+            },
+            progressReports: true,
+          }
+        });
+        break;
+      case 'therapist':
+        userData = await prisma.therapist.findUnique({
+          where: { id: parseInt(userId) },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                lastLogin: true,
+              }
+            },
+            patients: {
+              include: {
+                user: {
+                  select: {
+                    username: true,
+                    email: true,
+                  }
+                }
+              }
+            },
+            therapyPlans: {
+              include: {
+                patient: {
+                  include: {
+                    user: {
+                      select: {
+                        username: true,
+                      }
+                    }
+                  }
+                },
+                therapySessions: true,
+              }
+            },
+          }
+        });
+        break;
+      case 'supervisor':
+        userData = await prisma.supervisor.findUnique({
+          where: { id: parseInt(userId) },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                lastLogin: true,
+              }
+            },
+            ratings: {
+              include: {
+                therapyPlan: {
+                  include: {
+                    patient: {
+                      include: {
+                        user: {
+                          select: {
+                            username: true,
+                          }
+                        }
+                      }
+                    },
+                    therapist: {
+                      include: {
+                        user: {
+                          select: {
+                            username: true,
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        });
+        break;
+      default:
+        throw new Error('Invalid user type');
+    }
+
+    return { success: true, userData };
+  } catch (error) {
+    console.error('Error fetching detailed user data:', error);
+    return { success: false, error: error.message };
+  }
+}

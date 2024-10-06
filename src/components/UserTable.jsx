@@ -17,7 +17,7 @@ export default function UserTable({ users, userType, onViewMore }) {
         <TableHeader>
           <TableRow>
             <TableHead>Username</TableHead>
-            <TableHead>Email</TableHead>
+            {/* <TableHead>Email</TableHead> */}
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -26,7 +26,7 @@ export default function UserTable({ users, userType, onViewMore }) {
             users.map((user) => (
               <TableRow key={user.id}>
                 <TableCell>{user.username}</TableCell>
-                <TableCell>{user.email}</TableCell>
+                {/* <TableCell>{user.email}</TableCell> */}
                 <TableCell>
                   <Button onClick={() => onViewMore(user.id, userType)}>
                     View More
