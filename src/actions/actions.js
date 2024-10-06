@@ -338,13 +338,12 @@ export async function fetchTherapyPlansForReview() {
     throw error;
   }
 }
-
-export async function submitTherapyPlanReview(userId,planId, ratingScore, feedback) {
+export async function submitTherapyPlanReview(userId, planId, ratingScore, feedback) {
   try {
     // First, update the therapy plan status
     const updatedPlan = await prisma.therapyPlan.update({
       where: { id: parseInt(planId) },
-      data: { status: 'reviewed' },
+      data: { status: 'approved' },
     });
 
     // Then, create a new clinical rating

@@ -9,9 +9,6 @@ import TherapistDashboard from '@/components/TherapistDashboard';
 import MainDashboardNavbar from '@/components/Navbar';
 
 
-// Define SupervisorDashboardWrapper outside of the main component
-const SupervisorDashboardWrapper = ({ userId }) => <SupervisorDashboard userId={userId} />;
-
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [userRole, setUserRole] = useState(null);
@@ -64,7 +61,9 @@ export default function Dashboard() {
       DashboardComponent = TherapistDashboard;
       break;
     case 'supervisor':
-      DashboardComponent = SupervisorDashboardWrapper;
+      DashboardComponent = function SupervisorDashboardWrapper() {
+        return <SupervisorDashboard userId={userId} />;
+      };
       break;
     case 'admin':
       DashboardComponent = AdminDashboard;
