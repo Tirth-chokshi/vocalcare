@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useSession, signOut } from "next-auth/react"
 import { Bell, User, LogOut } from "lucide-react"
 import { useTheme } from "next-themes"
+import { MoonIcon, SunIcon } from "@radix-ui/react-icons"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -15,17 +16,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { ModeToggle } from "@/components/ModeToogle"
 
 export default function MainDashboardNavbar({ userRole }) {
   const { data: session, status } = useSession()
-  const { theme, resolvedTheme } = useTheme()
+  const { theme, setTheme, resolvedTheme } = useTheme()
 
   useEffect(() => {
+    // Additional effects can go here if needed
   }, [theme, resolvedTheme])
 
   if (status === "loading") {
-    return <p>Loading...</p>
+    return <div className="flex justify-center items-center"><p>Loading...</p></div>
   }
 
   if (!session) {
@@ -34,6 +35,10 @@ export default function MainDashboardNavbar({ userRole }) {
 
   const handleLogout = async () => {
     await signOut({ redirect: true, callbackUrl: "/signin" })
+  }
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
   }
 
   return (
@@ -55,8 +60,6 @@ export default function MainDashboardNavbar({ userRole }) {
         </div>
 
         <div className="flex items-center space-x-4">
-          <ModeToggle />
-
           <Button variant="ghost" size="icon" className="relative">
             <Bell size={20} />
             <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
@@ -81,25 +84,30 @@ export default function MainDashboardNavbar({ userRole }) {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {session.user.username}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {session.user.email}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    Role: {userRole}
-                  </p>
+                  <p className="text-sm font-medium leading-none">{session.user.username}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
+                  <p className="text-xs leading-none text-muted-foreground">Role: {userRole}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <Link href="/profile" className="flex items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Theme change</span>
+              <DropdownMenuItem onSelect={toggleTheme}>
+                {resolvedTheme === 'dark' ? (
+                  <>
+                    <SunIcon className="mr-2 h-4 w-4" />
+                    <span>Change to Light</span>
+                  </>
+                ) : (
+                  <>
+                    <MoonIcon className="mr-2 h-4 w-4" />
+                    <span>Change to Dark</span>
+                  </>
+                )}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />

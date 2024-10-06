@@ -28,7 +28,7 @@ export default function AllocatedPatientsList({ patients, onCreateTherapyPlan })
               <CardTitle>{patient.user?.username || 'Unnamed Patient'}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Email: {patient.user?.email || 'Not provided'}</p>
+              {/* <p>Email: {patient.user?.email || 'Not provided'}</p> */}
               <p>Diagnosis: {patient.diagnosis || 'Not specified'}</p>
               {(patient.therapyPlans?.length ?? 0) > 0 ? (
                 <p>Therapy Plan: Created</p>
