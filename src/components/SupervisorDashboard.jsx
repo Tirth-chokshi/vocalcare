@@ -70,8 +70,8 @@ export default function SupervisorDashboard({ userId }) {
                             <TableRow>
                                 <TableHead>Patient</TableHead>
                                 <TableHead>Therapist</TableHead>
-                                <TableHead>Start Date</TableHead>
                                 <TableHead>Goals</TableHead>
+                                <TableHead>Start Date</TableHead>
                                 <TableHead>Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -80,8 +80,8 @@ export default function SupervisorDashboard({ userId }) {
                                 <TableRow key={plan.id}>
                                     <TableCell>{plan.patient.user.username}</TableCell>
                                     <TableCell>{plan.therapist.user.username}</TableCell>
-                                    <TableCell>{new Date(plan.startDate).toLocaleDateString()}</TableCell>
                                     <TableCell>{plan.goals}</TableCell>
+                                    <TableCell>{new Date(plan.startDate).toLocaleDateString()}</TableCell>
                                     <TableCell>
                                         <Button onClick={() => handleReview(plan)}>Review</Button>
                                     </TableCell>
