@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Toaster, toast } from 'sonner';
 import { fetchTherapyPlansForReview, submitTherapyPlanReview } from '@/actions/actions';
-import { useSession } from 'next-auth/react';
+import SupervisorPatientAllocation from './SupervisorPatientAllocation';
+// import ClinicalRatings from './ClinicalRatings';
+// import ProgressReport from './ProgressReport';
 
 export default function SupervisorDashboard({ userId }) {
     const [therapyPlans, setTherapyPlans] = useState([]);
@@ -58,7 +60,6 @@ export default function SupervisorDashboard({ userId }) {
     return (
         <div className="container mx-auto p-4">
             <Toaster />
-            <h1 className="text-2xl font-bold mb-6">Supervisor Dashboard</h1>
             <Card>
                 <CardHeader>
                     <CardTitle>Therapy Plans for Review</CardTitle>
@@ -155,6 +156,10 @@ export default function SupervisorDashboard({ userId }) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <SupervisorPatientAllocation/>
+            {/* <ClinicalRatings/>
+            <ProgressReport/> */}
         </div>
     );
 }
