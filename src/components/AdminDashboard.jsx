@@ -161,17 +161,17 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-8">
-                <div>
-                    <h2 className="text-2xl font-bold mb-4">Patients</h2>
-                    <UserTable users={patients} userType="patient" onViewMore={handleViewMore} />
+            <div>
+                    <h2 className="text-2xl font-bold mb-4">Supervisors</h2>
+                    <UserTable users={supervisors} userType="supervisor" onViewMore={handleViewMore} />
                 </div>
                 <div>
                     <h2 className="text-2xl font-bold mb-4">Therapists</h2>
                     <UserTable users={therapists} userType="therapist" onViewMore={handleViewMore} />
                 </div>
                 <div>
-                    <h2 className="text-2xl font-bold mb-4">Supervisors</h2>
-                    <UserTable users={supervisors} userType="supervisor" onViewMore={handleViewMore} />
+                    <h2 className="text-2xl font-bold mb-4">Patients</h2>
+                    <UserTable users={patients} userType="patient" onViewMore={handleViewMore} />
                 </div>
             </div>
 
