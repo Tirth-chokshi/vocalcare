@@ -36,6 +36,28 @@ export async function getSupervisorIdByEmail(email) {
   return user.id;
 }
 
+export async function getTherapistIdByEmail(email) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      role: true,
+      therapist: {
+        select: {
+          id: true
+        }
+      }
+    }
+  })
+
+  if (!user) return null;
+
+  if (user.role === 'therapist' && user.therapist) {
+    return user.therapist.id;
+  }
+
+  return user.id;
+}
 
 export async function createUser(formData) {
   const username = formData.get('username')
@@ -103,6 +125,7 @@ export async function createUser(formData) {
     return { success: false, error: error.message }
   }
 }
+
 
 export async function fetchTherapists() {
   try {
@@ -175,29 +198,7 @@ export async function allocatePatientToTherapist(patientId, therapistId) {
     return { success: false, error: error.message };
   }
 }
-export async function fetchAllocatedPatients(therapistId) {
-  try {
-    const patients = await prisma.patient.findMany({
-      where: { 
-        therapistId: therapistId,
-        NOT: { therapistId: null } // Ensures only allocated patients are returned
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-          }
-        }
-      }
-    });
-    return patients;
-  } catch (error) {
-    console.error('Error fetching allocated patients:', error);
-    return [];
-  }
-}
+
 
 export async function fetchTherapyPlans(therapistId) {
   try {
@@ -653,5 +654,52 @@ export async function fetchDetailedUserData(userId, userType) {
   } catch (error) {
     console.error('Error fetching detailed user data:', error);
     return { success: false, error: error.message };
+  }
+}
+
+export async function fetchAllocatedPatients(therapistId) {
+  try {
+    const patients = await prisma.patient.findMany({
+      where: { 
+        therapistId: parseInt(therapistId),
+      },
+      include: {
+        user: {
+          select: {
+            username: true,
+            email: true,
+          }
+        },
+        therapyPlans: {
+          where: {
+            status: 'pending'
+          }
+        }
+      }
+    });
+    return patients;
+  } catch (error) {
+    console.error('Error fetching allocated patients:', error);
+    throw error;
+  }
+}
+
+export async function createTherapyPlan(therapistId, patientId, planData) {
+  try {
+    const newPlan = await prisma.therapyPlan.create({
+      data: {
+        therapist: { connect: { id: parseInt(therapistId) } },
+        patient: { connect: { id: parseInt(patientId) } },
+        goals: planData.goals,
+        activities: planData.activities,
+        startDate: new Date(planData.startDate),
+        endDate: new Date(planData.endDate),
+        status: 'pending',
+      },
+    });
+    return newPlan;
+  } catch (error) {
+    console.error('Error creating therapy plan:', error);
+    throw error;
   }
 }

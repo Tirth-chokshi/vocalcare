@@ -88,9 +88,9 @@ export default function AdminDashboard() {
                         <h3 className="text-lg font-semibold">Patient Details</h3>
                         <p>Date of Birth: {new Date(specificData.dateOfBirth).toLocaleDateString()}</p>
                         <p>Diagnosis: {specificData.diagnosis}</p>
-                        <p>Assigned Therapist: {specificData.assignedTherapist.user.username}</p>
-                        <h4>Therapy Plans: {specificData.therapyPlans.length}</h4>
-                        <h4>Progress Reports: {specificData.progressReports.length}</h4>
+                        <p>Assigned Therapist: {specificData?.assignedTherapist?.user?.username || 'Not Assigned'}</p>
+                        <h4>Therapy Plans: {specificData?.therapyPlans?.length || 'No Plans'}</h4>
+                        <h4>Progress Reports: {specificData?.progressReports?.length || 'No Reports'}</h4>
                     </>
                 )}
 

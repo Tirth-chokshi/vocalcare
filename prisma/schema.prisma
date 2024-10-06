@@ -55,8 +55,8 @@ model Patient {
   userId             Int              @unique
   dateOfBirth        DateTime
   diagnosis          String
-  assignedTherapist  Therapist        @relation(fields: [therapistId], references: [id])
-  therapistId        Int
+  assignedTherapist  Therapist?        @relation(fields: [therapistId], references: [id])
+  therapistId        Int?
   therapyPlans       TherapyPlan[]
   therapySessions    TherapySession[]
   progressReports    ProgressReport[]

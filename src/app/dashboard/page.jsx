@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getUserRoleByEmail, getSupervisorIdByEmail } from '@/actions/actions'
+import { getUserRoleByEmail, getSupervisorIdByEmail, getTherapistIdByEmail } from '@/actions/actions'
 import AdminDashboard from '@/components/AdminDashboard';
 import SupervisorDashboard from '@/components/SupervisorDashboard';
 import PatientDashboard from '@/components/PatientDashboard';
@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [therapistId, settherapistId] = useState(null);
 
   useEffect(() => {
     async function fetchUserRole() {
@@ -22,8 +23,10 @@ export default function Dashboard() {
         try {
           const role = await getUserRoleByEmail(session.user.email);
           const uId = await getSupervisorIdByEmail(session.user.email);
+          const therapistId = await getTherapistIdByEmail(session.user.email);
           setUserRole(role);
           setUserId(uId)
+          settherapistId(therapistId)
         } catch (err) {
           setError('Failed to fetch user role');
           console.error(err);
@@ -58,7 +61,9 @@ export default function Dashboard() {
       DashboardComponent = PatientDashboard;
       break;
     case 'therapist':
-      DashboardComponent = TherapistDashboard;
+      DashboardComponent = function TherapistDashboardWrapper(){
+        return <TherapistDashboard therapistId={therapistId} />
+      }
       break;
     case 'supervisor':
       DashboardComponent = function SupervisorDashboardWrapper() {
