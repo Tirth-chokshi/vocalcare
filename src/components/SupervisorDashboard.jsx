@@ -11,7 +11,7 @@ import { Toaster, toast } from 'sonner';
 import { fetchTherapyPlansForReview, submitTherapyPlanReview } from '@/actions/actions';
 import SupervisorPatientAllocation from './SupervisorPatientAllocation';
 import ClinicalRatings from './ClinicalRatings';
-// import ProgressReport from './ProgressReport';
+import ProgressReport from './ProgressReport';
 
 export default function SupervisorDashboard({ userId }) {
     const [therapyPlans, setTherapyPlans] = useState([]);
@@ -159,7 +159,7 @@ export default function SupervisorDashboard({ userId }) {
 
             <SupervisorPatientAllocation/>
             <ClinicalRatings/>
-            {/* <ProgressReport/> */}
+            <ProgressReport/>
         </div>
     );
 }
