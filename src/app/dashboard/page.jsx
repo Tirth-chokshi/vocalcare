@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getUserRoleByEmail, getUserIdByEmail } from '@/actions/actions'
+import { getUserRoleByEmail, getSupervisorIdByEmail } from '@/actions/actions'
 import AdminDashboard from '@/components/AdminDashboard';
 import SupervisorDashboard from '@/components/SupervisorDashboard';
 import PatientDashboard from '@/components/PatientDashboard';
@@ -21,7 +21,7 @@ export default function Dashboard() {
       if (session?.user?.email) {
         try {
           const role = await getUserRoleByEmail(session.user.email);
-          const uId = await getUserIdByEmail(session.user.email);
+          const uId = await getSupervisorIdByEmail(session.user.email);
           setUserRole(role);
           setUserId(uId)
         } catch (err) {

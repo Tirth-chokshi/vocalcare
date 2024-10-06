@@ -13,7 +13,7 @@ export async function getUserRoleByEmail(email) {
   return user?.role
 }
 
-export async function getUserIdByEmail(email) {
+export async function getSupervisorIdByEmail(email) {
   const user = await prisma.user.findUnique({
     where: { email },
     select: {
@@ -225,51 +225,51 @@ export async function fetchTherapyPlans(therapistId) {
   }
 }
 
-export async function fetchClinicalRatings() {
-  try {
-    const clinicalRatings = await prisma.clinicalRating.findMany({
-      include: {
-        therapyPlan: {
-          include: {
-            therapist: { 
-              include: { 
-                user: {
-                  select: {
-                    username: true,
-                  }
-                } 
-              }
-            },
-            patient: { 
-              include: { 
-                user: {
-                  select: {
-                    username: true,
-                  }
-                } 
-              }
-            },
-          },
-        },
-        supervisor: {
-          include: {
-            user: {
-              select: {
-                username: true,
-              }
-            }
-          }
-        }
-      },
-      orderBy: { ratingDate: 'desc' },
-      take: 10,
-    });
-    return clinicalRatings;
-  } catch (error) {
-    console.error('Error fetching clinical ratings:', error);
-    return [];
-  }
-}
+// export async function fetchClinicalRatings() {
+//   try {
+//     const clinicalRatings = await prisma.clinicalRating.findMany({
+//       include: {
+//         therapyPlan: {
+//           include: {
+//             therapist: { 
+//               include: { 
+//                 user: {
+//                   select: {
+//                     username: true,
+//                   }
+//                 } 
+//               }
+//             },
+//             patient: { 
+//               include: { 
+//                 user: {
+//                   select: {
+//                     username: true,
+//                   }
+//                 } 
+//               }
+//             },
+//           },
+//         },
+//         supervisor: {
+//           include: {
+//             user: {
+//               select: {
+//                 username: true,
+//               }
+//             }
+//           }
+//         }
+//       },
+//       orderBy: { ratingDate: 'desc' },
+//       take: 10,
+//     });
+//     return clinicalRatings;
+//   } catch (error) {
+//     console.error('Error fetching clinical ratings:', error);
+//     return [];
+//   }
+// }
 
 export async function fetchSupervisors() {
   try {
@@ -340,13 +340,11 @@ export async function fetchTherapyPlansForReview() {
 }
 export async function submitTherapyPlanReview(userId, planId, ratingScore, feedback) {
   try {
-    // First, update the therapy plan status
     const updatedPlan = await prisma.therapyPlan.update({
       where: { id: parseInt(planId) },
       data: { status: 'approved' },
     });
 
-    // Then, create a new clinical rating
     const newRating = await prisma.clinicalRating.create({
       data: {
         therapyPlanId: parseInt(planId),
@@ -360,6 +358,165 @@ export async function submitTherapyPlanReview(userId, planId, ratingScore, feedb
     return { success: true, plan: updatedPlan, rating: newRating };
   } catch (error) {
     console.error('Error submitting therapy plan review:', error);
+    return { success: false, error: error.message };
+  }
+}
+export async function fetchPatientAllocationData() {
+  try {
+    const data = await prisma.therapist.findMany({
+      include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
+        patients: {
+          include: {
+            user: {
+              select: {
+                username: true,
+              },
+            },
+            therapyPlans: {
+              where: {
+                status: 'approved',
+              },
+              include: {
+                therapySessions: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error fetching patient allocation data:', error);
+    return { success: false, error: error.message };
+  }
+}
+export async function fetchClinicalRatings(page = 1, pageSize = 5) {
+  try {
+    const skip = (page - 1) * pageSize;
+    const [clinicalRatings, totalCount] = await prisma.$transaction([
+      prisma.clinicalRating.findMany({
+        skip,
+        take: pageSize,
+        orderBy: { ratingDate: 'desc' },
+        include: {
+          supervisor: {
+            include: {
+              user: {
+                select: {
+                  username: true,
+                }
+              }
+            }
+          },
+          therapyPlan: {
+            include: {
+              patient: {
+                include: {
+                  user: {
+                    select: {
+                      username: true,
+                    }
+                  }
+                }
+              },
+              therapist: {
+                include: {
+                  user: {
+                    select: {
+                      username: true,
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }),
+      prisma.clinicalRating.count()
+    ]);
+
+    return { 
+      success: true, 
+      data: clinicalRatings,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize)
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching clinical ratings:', error);
+    return { success: false, error: error.message };
+  }
+}
+export async function fetchPatientProgressData(page = 1, pageSize = 5) {
+  try {
+    const skip = (page - 1) * pageSize;
+    const [patientsWithProgress, totalCount] = await prisma.$transaction([
+      prisma.patient.findMany({
+        skip,
+        take: pageSize,
+        include: {
+          user: {
+            select: {
+              username: true,
+            }
+          },
+          assignedTherapist: {
+            include: {
+              user: {
+                select: {
+                  username: true,
+                }
+              }
+            }
+          },
+          progressReports: {
+            orderBy: {
+              reportDate: 'desc'
+            },
+            take: 1
+          },
+          therapyPlans: {
+            where: {
+              status: 'approved'
+            },
+            include: {
+              therapySessions: {
+                orderBy: {
+                  sessionDate: 'desc'
+                },
+                take: 5,
+                include: {
+                  progressNote: true
+                }
+              }
+            }
+          }
+        }
+      }),
+      prisma.patient.count()
+    ]);
+
+    return { 
+      success: true, 
+      data: patientsWithProgress,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize)
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching patient progress data:', error);
     return { success: false, error: error.message };
   }
 }
