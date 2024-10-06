@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchDetailedAllocatedPatients, createTherapyPlan } from '@/actions/actions';
 import { toast } from 'sonner';
 import AllocatedPatientsList from './AllocatedPatientsList';
+import PlanBuilder from './PlanBuilder';
 
 export default function TherapistDashboard({ therapistId }) {
   const [patients, setPatients] = useState([]);
@@ -46,6 +47,7 @@ export default function TherapistDashboard({ therapistId }) {
         patients={patients} 
         onCreateTherapyPlan={handleCreateTherapyPlan} 
       />
+      <PlanBuilder/>
     </div>
   );
 }
