@@ -672,7 +672,9 @@ export async function fetchAllocatedPatients(therapistId) {
         },
         therapyPlans: {
           where: {
-            status: 'pending'
+            status: {
+              in: ['pending', 'approved']
+            }
           }
         }
       }
@@ -700,6 +702,41 @@ export async function createTherapyPlan(therapistId, patientId, planData) {
     return newPlan;
   } catch (error) {
     console.error('Error creating therapy plan:', error);
+    throw error;
+  }
+}
+export async function fetchDetailedAllocatedPatients(therapistId) {
+  try {
+    const patients = await prisma.patient.findMany({
+      where: { 
+        therapistId: parseInt(therapistId),
+      },
+      include: {
+        user: {
+          select: {
+            username: true,
+            email: true,
+          }
+        },
+        therapyPlans: {
+          where: {
+            status: {
+              in: ['pending', 'approved']
+            }
+          },
+          include: {
+            therapySessions: {
+              include: {
+                progressNote: true
+              }
+            }
+          }
+        }
+      }
+    });
+    return patients;
+  } catch (error) {
+    console.error('Error fetching detailed allocated patients:', error);
     throw error;
   }
 }

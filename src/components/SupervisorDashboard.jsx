@@ -79,9 +79,9 @@ export default function SupervisorDashboard({ userId }) {
                             {therapyPlans.map((plan) => (
                                 <TableRow key={plan.id}>
                                     <TableCell>{plan.patient.user.username}</TableCell>
-                                    <TableCell>{plan.therapist.user.username}</TableCell>
-                                    <TableCell>{plan.goals}</TableCell>
-                                    <TableCell>{new Date(plan.startDate).toLocaleDateString()}</TableCell>
+                                    <TableCell>{plan.therapist.user.username || 'NULL'}</TableCell>
+                                    <TableCell>{plan.goals || 'NULL'}</TableCell>
+                                    <TableCell>{new Date(plan.startDate).toLocaleDateString() || 'NULL'}</TableCell>
                                     <TableCell>
                                         <Button onClick={() => handleReview(plan)}>Review</Button>
                                     </TableCell>
@@ -115,11 +115,11 @@ export default function SupervisorDashboard({ userId }) {
 
                                 <div>
                                     <Label className="font-bold">Start Date:</Label>
-                                    <p>{new Date(selectedPlan.startDate).toLocaleDateString()}</p>
+                                    <p>{new Date(selectedPlan.startDate).toLocaleDateString() || 'NULL'}</p>
                                 </div>
                                 <div>
                                     <Label className="font-bold">End Date:</Label>
-                                    <p>{new Date(selectedPlan.endDate).toLocaleDateString()}</p>
+                                    <p>{new Date(selectedPlan.endDate).toLocaleDateString() || 'NULL'}</p>
                                 </div>
                             </div>
                             <div>
