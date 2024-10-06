@@ -29,6 +29,8 @@ const LandingPage = () => {
             <Image
               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoA7t0hXaMps7UiyZmyAKclXA5BEl0hcCGQg&s"
               alt="Speech Therapy Session"
+              width={600} // Adjust width as per your needs
+              height={400} // Adjust height as per your needs
               className="w-full h-full object-cover"
             />
           </div>
