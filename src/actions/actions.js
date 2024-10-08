@@ -380,7 +380,9 @@ export async function fetchPatientAllocationData() {
             },
             therapyPlans: {
               where: {
-                status: 'approved',
+                status: {
+                  in: ['pending', 'approved']
+                }
               },
               include: {
                 therapySessions: true,
@@ -738,5 +740,80 @@ export async function fetchDetailedAllocatedPatients(therapistId) {
   } catch (error) {
     console.error('Error fetching detailed allocated patients:', error);
     throw error;
+  }
+}
+// In @/actions/actions.js
+
+export async function fetchApprovedTherapyPlans(therapistId) {
+  try {
+    const approvedPlans = await prisma.therapyPlan.findMany({
+      where: {
+        therapistId: parseInt(therapistId),
+        status: 'approved'
+      },
+      include: {
+        patient: {
+          include: {
+            user: {
+              select: {
+                username: true
+              }
+            }
+          }
+        }
+      }
+    });
+    return approvedPlans;
+  } catch (error) {
+    console.error('Error fetching approved therapy plans:', error);
+    throw error;
+  }
+}
+
+export async function createTherapySession(sessionData) {
+  try {
+    const newSession = await prisma.therapySession.create({
+      data: {
+        therapyPlan: { connect: { id: parseInt(sessionData.planId) } },
+        sessionDate: new Date(sessionData.sessionDate),
+        duration: parseInt(sessionData.duration),
+        status: 'in-progress',
+        progressNote: {
+          create: {
+            observations: sessionData.notes || '',
+            recommendations: ''
+          }
+        }
+      },
+      include: {
+        therapyPlan: {
+          include: {
+            patient: {
+              include: {
+                user: {
+                  select: {
+                    username: true
+                  }
+                }
+              }
+            },
+            therapist: {
+              include: {
+                user: {
+                  select: {
+                    username: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return { success: true, session: newSession };
+  } catch (error) {
+    console.error('Error creating therapy session:', error);
+    return { success: false, error: error.message };
   }
 }
