@@ -33,17 +33,18 @@ export default function AllocatedPatientsList({ patients, onCreateTherapyPlan })
               {(patient.therapyPlans?.length ?? 0) > 0 ? (
                 <p>Therapy Plan: Created</p>
               ) : (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="mt-2">Create Therapy Plan</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Create Therapy Plan for {patient.user?.username || 'Patient'}</DialogTitle>
-                    </DialogHeader>
-                    <TherapyPlanForm onSubmit={(planData) => onCreateTherapyPlan(patient.id, planData)} />
-                  </DialogContent>
-                </Dialog>
+                // <Dialog>
+                //   <DialogTrigger asChild>
+                //     <Button className="mt-2">Create Therapy Plan</Button>
+                //   </DialogTrigger>
+                //   <DialogContent>
+                //     <DialogHeader>
+                //       <DialogTitle>Create Therapy Plan for {patient.user?.username || 'Patient'}</DialogTitle>
+                //     </DialogHeader>
+                //     <TherapyPlanForm onSubmit={(planData) => onCreateTherapyPlan(patient.id, planData)} />
+                //   </DialogContent>
+                // </Dialog>
+                <p>no active therapy plan</p>
               )}
               {viewMode === 'dialog' ? (
                 <DialogDetailView patient={patient} />
@@ -66,7 +67,7 @@ function DialogDetailView({ patient }) {
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>{patient.user?.username || 'Patient'} Details</DialogTitle>
+          <DialogTitle>{patient.user?.username || 'Patient'}</DialogTitle>
         </DialogHeader>
         <div className="mt-4 space-y-6">
           <div>
