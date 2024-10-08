@@ -244,7 +244,7 @@ export default function SessionBuilder({ therapistId }) {
             </div>
             <div>
               <p className="font-bold">Important Reminder</p>
-              <p className="text-sm">Ensure all necessary materials are prepared before starting the session. Review the patient's history and previous session notes if available.</p>
+              <p className="text-sm">Ensure all necessary materials are prepared before starting the session. Review the patien&lsquo;s history and previous session notes if available.</p>
             </div>
           </div>
         </div>
