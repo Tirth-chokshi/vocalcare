@@ -742,7 +742,6 @@ export async function fetchDetailedAllocatedPatients(therapistId) {
     throw error;
   }
 }
-// In @/actions/actions.js
 
 export async function fetchApprovedTherapyPlans(therapistId) {
   try {
@@ -761,6 +760,9 @@ export async function fetchApprovedTherapyPlans(therapistId) {
             }
           }
         }
+      },
+      orderBy: {
+        startDate: 'desc'
       }
     });
     return approvedPlans;
@@ -770,17 +772,65 @@ export async function fetchApprovedTherapyPlans(therapistId) {
   }
 }
 
+export async function fetchPatientHistory(patientId) {
+  try {
+    const sessions = await prisma.therapySession.findMany({
+      where: {
+        patientId: parseInt(patientId)
+      },
+      orderBy: {
+        sessionDate: 'desc'
+      },
+      take: 5 // Get the last 5 sessions
+    });
+
+    const lastSession = sessions[0]?.sessionDate || null;
+    const totalSessions = await prisma.therapySession.count({
+      where: {
+        patientId: parseInt(patientId)
+      }
+    });
+
+    // This is a placeholder. In a real application, you'd have a more sophisticated way to calculate progress
+    const progress = totalSessions > 0 ? 'Ongoing' : 'Not started';
+
+    return {
+      totalSessions,
+      lastSession,
+      progress,
+      recentSessions: sessions
+    };
+  } catch (error) {
+    console.error('Error fetching patient history:', error);
+    throw error;
+  }
+}
+
 export async function createTherapySession(sessionData) {
   try {
+    const { planId, sessionDateTime, duration, notes, therapistId } = sessionData;
+
+    // First, fetch the therapy plan to get the patient ID
+    const therapyPlan = await prisma.therapyPlan.findUnique({
+      where: { id: parseInt(planId) },
+      select: { patientId: true }
+    });
+
+    if (!therapyPlan) {
+      throw new Error('Therapy plan not found');
+    }
+
     const newSession = await prisma.therapySession.create({
       data: {
-        therapyPlan: { connect: { id: parseInt(sessionData.planId) } },
-        sessionDate: new Date(sessionData.sessionDate),
-        duration: parseInt(sessionData.duration),
-        status: 'in-progress',
+        therapyPlan: { connect: { id: parseInt(planId) } },
+        therapist: { connect: { id: parseInt(therapistId) } },
+        patient: { connect: { id: therapyPlan.patientId } },
+        sessionDate: new Date(sessionDateTime),
+        duration: parseInt(duration),
+        status: 'scheduled',
         progressNote: {
           create: {
-            observations: sessionData.notes || '',
+            observations: notes || '',
             recommendations: ''
           }
         }
@@ -804,6 +854,24 @@ export async function createTherapySession(sessionData) {
                     username: true
                   }
                 }
+              }
+            }
+          }
+        },
+        therapist: {
+          include: {
+            user: {
+              select: {
+                username: true
+              }
+            }
+          }
+        },
+        patient: {
+          include: {
+            user: {
+              select: {
+                username: true
               }
             }
           }
