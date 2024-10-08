@@ -4,18 +4,9 @@ import { fetchDetailedAllocatedPatients, createTherapyPlan } from '@/actions/act
 import { toast } from 'sonner'
 import AllocatedPatientsList from './AllocatedPatientsList'
 import PlanBuilder from './PlanBuilder'
-import { Badge } from '@/components/ui/badge'
-import { Bell } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from './ui/button'
 import SessionBuilder from './SessionBuilder'
+import TherapyPlansComponent from './TherapyPlansComponent'
+// import SessionProgressTracker from './SessionProgressTracker'
 
 export default function TherapistDashboard({ therapistId }) {
   const [patients, setPatients] = useState([])
@@ -128,6 +119,9 @@ export default function TherapistDashboard({ therapistId }) {
       <SessionBuilder
         therapistId={therapistId}
       />
+
+      {/* <SessionProgressTracker therapistId={therapistId} /> */}
+      <TherapyPlansComponent therapistId={therapistId}/>
     </div>
   )
 }

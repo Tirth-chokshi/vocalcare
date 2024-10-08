@@ -203,18 +203,18 @@ export async function allocatePatientToTherapist(patientId, therapistId) {
 export async function fetchTherapyPlans(therapistId) {
   try {
     const therapyPlans = await prisma.therapyPlan.findMany({
-      where: { 
+      where: {
         therapistId: therapistId,
         status: 'In Progress'
       },
       include: {
-        patient: { 
-          include: { 
+        patient: {
+          include: {
             user: {
               select: {
                 username: true,
               }
-            } 
+            }
           }
         },
       },
@@ -444,8 +444,8 @@ export async function fetchClinicalRatings(page = 1, pageSize = 5) {
       prisma.clinicalRating.count()
     ]);
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: clinicalRatings,
       pagination: {
         page,
@@ -508,8 +508,8 @@ export async function fetchPatientProgressData(page = 1, pageSize = 5) {
       prisma.patient.count()
     ]);
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: patientsWithProgress,
       pagination: {
         page,
@@ -662,7 +662,7 @@ export async function fetchDetailedUserData(userId, userType) {
 export async function fetchAllocatedPatients(therapistId) {
   try {
     const patients = await prisma.patient.findMany({
-      where: { 
+      where: {
         therapistId: parseInt(therapistId),
       },
       include: {
@@ -710,7 +710,7 @@ export async function createTherapyPlan(therapistId, patientId, planData) {
 export async function fetchDetailedAllocatedPatients(therapistId) {
   try {
     const patients = await prisma.patient.findMany({
-      where: { 
+      where: {
         therapistId: parseInt(therapistId),
       },
       include: {
@@ -883,5 +883,110 @@ export async function createTherapySession(sessionData) {
   } catch (error) {
     console.error('Error creating therapy session:', error);
     return { success: false, error: error.message };
+  }
+}
+export async function fetchApprovedTherapyPlansTherapist(therapistId, date) {
+  const startOfDay = new Date(date)
+  startOfDay.setHours(0, 0, 0, 0)
+
+  const endOfDay = new Date(date)
+  endOfDay.setHours(23, 59, 59, 999)
+
+  return await prisma.therapyPlan.findMany({
+    where: {
+      therapistId: parseInt(therapistId),
+      status: 'approved',
+      therapySessions: {
+        some: {
+          sessionDate: {
+            gte: startOfDay,
+            lte: endOfDay
+          }
+        }
+      }
+    },
+    include: {
+      patient: {
+        include: {
+          user: {
+            select: {
+              username: true
+            }
+          }
+        }
+      },
+      therapySessions: {
+        where: {
+          sessionDate: {
+            gte: startOfDay,
+            lte: endOfDay
+          }
+        },
+        include: {
+          progressNote: true
+        }
+      }
+    }
+  })
+}
+
+export async function updateSessionStatus(sessionId, status) {
+  return await prisma.therapySession.update({
+    where: { id: parseInt(sessionId) },
+    data: { status }
+  })
+}
+
+export async function updateSessionNotes(sessionId, observations, recommendations) {
+  return await prisma.therapySession.update({
+    where: { id: parseInt(sessionId) },
+    data: {
+      progressNote: {
+        upsert: {
+          create: { observations, recommendations },
+          update: { observations, recommendations }
+        }
+      }
+    }
+  })
+}
+export async function fetchTherapyPlansByStatus(therapistId) {
+  try {
+    const therapyPlans = await prisma.therapyPlan.findMany({
+      where: {
+        therapistId: parseInt(therapistId),
+        status: {
+          in: ['pending', 'approved']
+        }
+      },
+      include: {
+        patient: {
+          include: {
+            user: {
+              select: {
+                username: true,
+              }
+            }
+          }
+        },
+        therapySessions: {
+          include: {
+            progressNote: true
+          }
+        }
+      },
+      orderBy: {
+        startDate: 'desc'
+      }
+    });
+
+    // Separate plans into pending and approved
+    const pendingPlans = therapyPlans.filter(plan => plan.status === 'pending');
+    const approvedPlans = therapyPlans.filter(plan => plan.status === 'approved');
+
+    return { pendingPlans, approvedPlans };
+  } catch (error) {
+    console.error('Error fetching therapy plans:', error);
+    throw error;
   }
 }
