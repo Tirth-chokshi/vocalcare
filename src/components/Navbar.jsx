@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getUnreadNotifications, markNotificationAsRead } from '@/actions/actions';
 import { toast } from 'sonner';
+import DashboardSearch from './DashboardSearch';
 
 const ProfileManagement = React.lazy(() => import('./ProfileManagement'));
 
@@ -73,7 +74,11 @@ export default function MainDashboardNavbar({ userRole }) {
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
-
+  const handleSearch = (searchTerm, searchCategory) => {
+    // Implement the search logic here
+    console.log(`Searching for "${searchTerm}" in category "${searchCategory}"`);
+    // You would typically call an API here and update the state with search results
+  }
   return (
     <header className="bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -93,6 +98,7 @@ export default function MainDashboardNavbar({ userRole }) {
           </div>
 
           <div className="flex items-center space-x-4">
+            <DashboardSearch onSearch={handleSearch} userRole={userRole} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
@@ -112,9 +118,9 @@ export default function MainDashboardNavbar({ userRole }) {
                   notifications.map((notification) => (
                     <DropdownMenuItem key={notification.id} className="flex flex-col items-start">
                       <span>{notification.message}</span>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleMarkAsRead(notification.id);
@@ -156,7 +162,7 @@ export default function MainDashboardNavbar({ userRole }) {
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => {}}>
+                <DropdownMenuItem onSelect={() => { }}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
