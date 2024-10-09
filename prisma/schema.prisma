@@ -8,18 +8,19 @@ datasource db {
 }
 
 model User {
-  id            Int       @id @default(autoincrement())
-  email         String    @unique
-  password      String
-  username      String    @unique
-  role          String
-  createdAt     DateTime  @default(now())
-  lastLogin     DateTime?
-  therapist     Therapist?
-  supervisor    Supervisor?
-  patient       Patient?
-  admin         Admin?
-  sessions      Session[]
+  id           Int            @id @default(autoincrement())
+  email        String         @unique
+  password     String
+  username     String         @unique
+  role         String
+  createdAt    DateTime       @default(now())
+  lastLogin    DateTime?
+  admin        Admin?
+  notification Notification[]
+  patient      Patient?
+  sessions     Session[]
+  supervisor   Supervisor?
+  therapist    Therapist?
 }
 
 model Session {
@@ -31,98 +32,107 @@ model Session {
 }
 
 model Therapist {
-  id               Int              @id @default(autoincrement())
-  user             User             @relation(fields: [userId], references: [id])
-  userId           Int              @unique
-  specialization   String
-  yearsExperience  Int
-  therapyPlans     TherapyPlan[]
-  therapySessions  TherapySession[]
-  patients         Patient[]
+  id              Int              @id @default(autoincrement())
+  userId          Int              @unique
+  specialization  String
+  yearsExperience Int
+  patients        Patient[]
+  user            User             @relation(fields: [userId], references: [id])
+  therapyPlans    TherapyPlan[]
+  therapySessions TherapySession[]
 }
 
 model Supervisor {
-  id           Int             @id @default(autoincrement())
-  user         User            @relation(fields: [userId], references: [id])
-  userId       Int             @unique
-  department   String
-  ratings      ClinicalRating[]
+  id         Int              @id @default(autoincrement())
+  userId     Int              @unique
+  department String
+  ratings    ClinicalRating[]
+  user       User             @relation(fields: [userId], references: [id])
 }
 
 model Patient {
-  id                 Int              @id @default(autoincrement())
-  user               User             @relation(fields: [userId], references: [id])
-  userId             Int              @unique
-  dateOfBirth        DateTime
-  diagnosis          String
-  assignedTherapist  Therapist?        @relation(fields: [therapistId], references: [id])
-  therapistId        Int?
-  therapyPlans       TherapyPlan[]
-  therapySessions    TherapySession[]
-  progressReports    ProgressReport[]
+  id                Int              @id @default(autoincrement())
+  userId            Int              @unique
+  dateOfBirth       DateTime
+  diagnosis         String
+  therapistId       Int?
+  assignedTherapist Therapist?       @relation(fields: [therapistId], references: [id])
+  user              User             @relation(fields: [userId], references: [id])
+  progressReports   ProgressReport[]
+  therapyPlans      TherapyPlan[]
+  therapySessions   TherapySession[]
 }
 
 model Admin {
-  id           Int    @id @default(autoincrement())
-  user         User   @relation(fields: [userId], references: [id])
-  userId       Int    @unique
-  department   String
-  accessLevel  String
+  id          Int    @id @default(autoincrement())
+  userId      Int    @unique
+  department  String
+  accessLevel String
+  user        User   @relation(fields: [userId], references: [id])
 }
 
 model TherapyPlan {
-  id           Int              @id @default(autoincrement())
-  patient      Patient          @relation(fields: [patientId], references: [id])
-  patientId    Int
-  therapist    Therapist        @relation(fields: [therapistId], references: [id])
-  therapistId  Int
-  goals        String
-  activities   String
-  startDate    DateTime
-  endDate      DateTime
-  status       String
+  id              Int              @id @default(autoincrement())
+  patientId       Int
+  therapistId     Int
+  goals           String
+  activities      String
+  startDate       DateTime
+  endDate         DateTime
+  status          String
+  ratings         ClinicalRating[]
+  patient         Patient          @relation(fields: [patientId], references: [id])
+  therapist       Therapist        @relation(fields: [therapistId], references: [id])
   therapySessions TherapySession[]
-  ratings      ClinicalRating[]
 }
 
 model TherapySession {
-  id           Int            @id @default(autoincrement())
-  therapyPlan  TherapyPlan    @relation(fields: [planId], references: [id])
+  id           Int           @id @default(autoincrement())
   planId       Int
-  therapist    Therapist      @relation(fields: [therapistId], references: [id])
   therapistId  Int
-  patient      Patient        @relation(fields: [patientId], references: [id])
   patientId    Int
   sessionDate  DateTime
   duration     Int
   status       String
   progressNote ProgressNote?
+  patient      Patient       @relation(fields: [patientId], references: [id])
+  therapyPlan  TherapyPlan   @relation(fields: [planId], references: [id])
+  therapist    Therapist     @relation(fields: [therapistId], references: [id])
 }
 
 model ProgressNote {
-  id                Int            @id @default(autoincrement())
-  therapySession    TherapySession @relation(fields: [therapySessionId], references: [id])
-  therapySessionId  Int            @unique
-  observations      String
-  recommendations   String
+  id               Int            @id @default(autoincrement())
+  therapySessionId Int            @unique
+  observations     String
+  recommendations  String
+  therapySession   TherapySession @relation(fields: [therapySessionId], references: [id])
 }
 
 model ProgressReport {
   id              Int      @id @default(autoincrement())
-  patient         Patient  @relation(fields: [patientId], references: [id])
   patientId       Int
   reportDate      DateTime
   summary         String
   overallProgress String
+  patient         Patient  @relation(fields: [patientId], references: [id])
 }
 
 model ClinicalRating {
-  id            Int        @id @default(autoincrement())
-  supervisor    Supervisor @relation(fields: [supervisorId], references: [id])
+  id            Int         @id @default(autoincrement())
   supervisorId  Int
-  therapyPlan   TherapyPlan @relation(fields: [therapyPlanId], references: [id])
   therapyPlanId Int
   ratingScore   Int
   feedback      String
   ratingDate    DateTime
+  supervisor    Supervisor  @relation(fields: [supervisorId], references: [id])
+  therapyPlan   TherapyPlan @relation(fields: [therapyPlanId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }

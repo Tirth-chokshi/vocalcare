@@ -192,13 +192,29 @@ export async function allocatePatientToTherapist(patientId, therapistId) {
       where: { id: parseInt(patientId) },
       data: { therapistId: parseInt(therapistId) },
     });
+
+    // Create a notification for the therapist
+    const therapist = await prisma.therapist.findUnique({
+      where: { id: parseInt(therapistId) },
+      include: { user: true },
+    });
+
+    if (therapist) {
+      await prisma.notification.create({
+        data: {
+          userId: therapist.userId,
+          message: `A new patient (ID: ${patientId}) has been allocated to you.`,
+          isRead: false,
+        },
+      });
+    }
+
     return { success: true, patient: updatedPatient };
   } catch (error) {
     console.error('Error allocating patient to therapist:', error);
     return { success: false, error: error.message };
   }
 }
-
 
 export async function fetchTherapyPlans(therapistId) {
   try {
@@ -987,6 +1003,39 @@ export async function fetchTherapyPlansByStatus(therapistId) {
     return { pendingPlans, approvedPlans };
   } catch (error) {
     console.error('Error fetching therapy plans:', error);
+    throw error;
+  }
+}
+
+export async function getUnreadNotifications(userId) {
+  try {
+    const notifications = await prisma.notification.findMany({
+      where: {
+        userId: parseInt(userId),
+        isRead: false,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return notifications;
+  } catch (error) {
+    console.error('Error fetching unread notifications:', error);
+    throw error;
+  }
+}
+
+export async function markNotificationAsRead(notificationId) {
+  try {
+    const updatedNotification = await prisma.notification.update({
+      where: { id: parseInt(notificationId) },
+      data: { isRead: true },
+    });
+
+    return updatedNotification;
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
     throw error;
   }
 }

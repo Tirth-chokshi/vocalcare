@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-export default function AllocatedPatientsList({ patients, onCreateTherapyPlan }) {
+export default function AllocatedPatientsList({ patients }) {
   const [viewMode, setViewMode] = useState('dialog'); // 'dialog' or 'sheet'
 
   return (

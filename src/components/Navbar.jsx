@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getUnreadNotifications, markNotificationAsRead } from '@/actions/actions';
+import { toast } from 'sonner';
 
 const ProfileManagement = React.lazy(() => import('./ProfileManagement'));
 
@@ -22,6 +24,39 @@ export default function MainDashboardNavbar({ userRole }) {
   const { data: session, status } = useSession();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (session?.user?.id) {
+        try {
+          const notificationsData = await getUnreadNotifications(session.user.id);
+          setNotifications(notificationsData);
+        } catch (error) {
+          console.error('Error fetching notifications:', error);
+        }
+      }
+    };
+
+    fetchNotifications();
+    // Set up polling for notifications
+    const intervalId = setInterval(fetchNotifications, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [session]);
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await markNotificationAsRead(notificationId);
+      setNotifications(prevNotifications =>
+        prevNotifications.filter(notification => notification.id !== notificationId)
+      );
+      toast.success('Notification marked as read');
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+      toast.error('Failed to mark notification as read');
+    }
+  };
 
   if (status === "loading") {
     return <div className="flex justify-center items-center h-16 bg-background"><p>Loading...</p></div>;
@@ -58,12 +93,41 @@ export default function MainDashboardNavbar({ userRole }) {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell size={20} />
-              <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full">
-                1
-              </span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell size={20} />
+                  {notifications.length > 0 && (
+                    <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full">
+                      {notifications.length}
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                {notifications.length === 0 ? (
+                  <DropdownMenuItem>No new notifications</DropdownMenuItem>
+                ) : (
+                  notifications.map((notification) => (
+                    <DropdownMenuItem key={notification.id} className="flex flex-col items-start">
+                      <span>{notification.message}</span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkAsRead(notification.id);
+                        }}
+                        className="mt-2"
+                      >
+                        Mark as Read
+                      </Button>
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
