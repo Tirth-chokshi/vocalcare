@@ -59,6 +59,29 @@ export async function getTherapistIdByEmail(email) {
   return user.id;
 }
 
+export async function getPatientIdByEmail(email) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      role: true,
+      patient: {
+        select: {
+          id: true
+        }
+      }
+    }
+  })
+
+  if (!user) return null;
+
+  if (user.role === 'patient' && user.patient) {
+    return user.patient.id;
+  }
+
+  return user.id;
+}
+
 export async function createUser(formData) {
   const username = formData.get('username')
   const email = formData.get('email')
@@ -372,7 +395,7 @@ export async function submitTherapyPlanReview(userId, planId, ratingScore, feedb
         ratingDate: new Date(),
       },
     });
-    
+
     await prisma.notification.create({
       data: {
         userId: updatedPlan.therapist.userId,
@@ -1091,4 +1114,48 @@ export async function markNotificationAsRead(notificationId) {
     console.error('Error marking notification as read:', error);
     throw error;
   }
+}
+export async function fetchPatientData(email) {
+  return await prisma.user.findUnique({
+    where: { email },
+    include: { patient: true },
+  })
+}
+
+export async function fetchUpcomingTherapySessions(patientId) {
+  const currentDate = new Date()
+  return await prisma.therapySession.findMany({
+    where: {
+      patientId: parseInt(patientId),
+      sessionDate: { gte: currentDate },
+    },
+    orderBy: { sessionDate: 'asc' },
+    take: 5,
+  })
+}
+
+export async function fetchPatientProgress(patientId) {
+  const progressReports = await prisma.progressReport.findMany({
+    where: { patientId: parseInt(patientId) },
+    orderBy: { reportDate: 'asc' },
+    select: {
+      reportDate: true,
+      overallProgress: true,
+    },
+  })
+
+  return progressReports.map(report => ({
+    date: report.reportDate.toISOString().split('T')[0],
+    progress: parseInt(report.overallProgress),
+  }))
+}
+
+export async function fetchCurrentTherapyPlan(patientId) {
+  return await prisma.therapyPlan.findFirst({
+    where: {
+      patientId: parseInt(patientId),
+      status: 'approved',
+    },
+    orderBy: { startDate: 'desc' },
+  })
 }
