@@ -1,11 +1,11 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { fetchComprehensivePatientData } from '@/actions/patientActions';
-import PatientTherapySchedule from './PatientTherapySchedule';
-import TherapyPlan from './TherapyPlan';
-import ProgressReports from './ProgressReports';
-import MedicationList from './MedicationList';
-import DiagnosesList from './DiagnosesList';
+// import { fetchComprehensivePatientData } from '@/actions/patientActions';
+// import PatientTherapySchedule from './PatientTherapySchedule';
+// import TherapyPlan from './TherapyPlan';
+// import ProgressReports from './ProgressReports';
+// import MedicationList from './MedicationList';
+// import DiagnosesList from './DiagnosesList';
 
 export default function PatientDashboard({ patientId }) {
     const [patientData, setPatientData] = useState(null);
@@ -36,13 +36,13 @@ export default function PatientDashboard({ patientId }) {
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold">Welcome {patientData.name}</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <PatientTherapySchedule sessions={patient.therapySessions} />
                 <TherapyPlan plan={patient.therapyPlans[0]} />
                 <ProgressReports reports={patient.progressReports} />
                 <MedicationList medications={patient.medications} />
                 <DiagnosesList diagnoses={patient.diagnoses} />
-            </div>
+            </div> */}
         </div>
     );
 }
