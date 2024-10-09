@@ -360,6 +360,7 @@ export async function submitTherapyPlanReview(userId, planId, ratingScore, feedb
     const updatedPlan = await prisma.therapyPlan.update({
       where: { id: parseInt(planId) },
       data: { status: 'approved' },
+      include: { therapist: true },
     });
 
     const newRating = await prisma.clinicalRating.create({
@@ -369,6 +370,14 @@ export async function submitTherapyPlanReview(userId, planId, ratingScore, feedb
         ratingScore: parseInt(ratingScore),
         feedback: feedback,
         ratingDate: new Date(),
+      },
+    });
+    
+    await prisma.notification.create({
+      data: {
+        userId: updatedPlan.therapist.userId,
+        message: `Your therapy plan (ID: ${planId}) has been approved.`,
+        isRead: false,
       },
     });
 
@@ -716,7 +725,33 @@ export async function createTherapyPlan(therapistId, patientId, planData) {
         endDate: new Date(planData.endDate),
         status: 'pending',
       },
+      include: {
+        therapist: {
+          include: {
+            user: true
+          }
+        }
+      }
     });
+
+    // Fetch all supervisors
+    const supervisors = await prisma.supervisor.findMany({
+      include: {
+        user: true
+      }
+    });
+
+    // Create notifications for all supervisors
+    for (const supervisor of supervisors) {
+      await prisma.notification.create({
+        data: {
+          userId: supervisor.userId,
+          message: `New therapy plan (ID: ${newPlan.id}) created by ${newPlan.therapist.user.username} and is pending review.`,
+          isRead: false,
+        },
+      });
+    }
+
     return newPlan;
   } catch (error) {
     console.error('Error creating therapy plan:', error);
@@ -895,12 +930,31 @@ export async function createTherapySession(sessionData) {
       }
     });
 
+    // Fetch all supervisors
+    const supervisors = await prisma.supervisor.findMany({
+      include: {
+        user: true
+      }
+    });
+
+    // Create notifications for all supervisors
+    for (const supervisor of supervisors) {
+      await prisma.notification.create({
+        data: {
+          userId: supervisor.userId,
+          message: `New therapy session (ID: ${newSession.id}) scheduled by ${newSession.therapist.user.username} for patient ${newSession.patient.user.username}.`,
+          isRead: false,
+        },
+      });
+    }
+
     return { success: true, session: newSession };
   } catch (error) {
     console.error('Error creating therapy session:', error);
     return { success: false, error: error.message };
   }
 }
+
 export async function fetchApprovedTherapyPlansTherapist(therapistId, date) {
   const startOfDay = new Date(date)
   startOfDay.setHours(0, 0, 0, 0)
@@ -996,7 +1050,6 @@ export async function fetchTherapyPlansByStatus(therapistId) {
       }
     });
 
-    // Separate plans into pending and approved
     const pendingPlans = therapyPlans.filter(plan => plan.status === 'pending');
     const approvedPlans = therapyPlans.filter(plan => plan.status === 'approved');
 
