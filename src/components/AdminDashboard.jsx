@@ -49,6 +49,10 @@ export default function AdminDashboard() {
         if (result.success) {
             toast.success('Patient allocated successfully');
             setAllocation({ patientId: '', therapistId: '' });
+            // Refresh the patient and therapist lists
+            const [updatedPatients, updatedTherapists] = await Promise.all([fetchPatients(), fetchTherapists()]);
+            setPatients(updatedPatients);
+            setTherapists(updatedTherapists);
         } else {
             toast.error('Failed to allocate patient: ' + result.error);
         }
@@ -115,6 +119,16 @@ export default function AdminDashboard() {
         );
     };
 
+    // Sort patients: unallocated first, then by creation date
+    const sortedPatients = [...patients].sort((a, b) => {
+        if (!a.therapistId && b.therapistId) return -1;
+        if (a.therapistId && !b.therapistId) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    // Sort therapists by number of patients (ascending)
+    const sortedTherapists = [...therapists].sort((a, b) => a.patientCount - b.patientCount);
+
     return (
         <div className="container mx-auto p-4">
             <Toaster />
@@ -122,7 +136,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <CreateUser />
 
-                <div className="p-4  rounded-lg shadow">
+                <div className="p-4 rounded-lg shadow">
                     <h2 className="text-xl font-semibold mb-4">Allocate Patient to Therapist</h2>
                     <form onSubmit={handleAllocatePatient} className="space-y-4">
                         <Select
@@ -133,9 +147,13 @@ export default function AdminDashboard() {
                                 <SelectValue placeholder="Select patient" />
                             </SelectTrigger>
                             <SelectContent>
-                                {patients.map((patient) => (
-                                    <SelectItem key={patient.id} value={patient.id.toString()}>
-                                        {patient.username}
+                                {sortedPatients.map((patient) => (
+                                    <SelectItem 
+                                        key={patient.id} 
+                                        value={patient.id.toString()}
+                                        className={!patient.therapistId ? "font-bold" : ""}
+                                    >
+                                        {patient.username} {!patient.therapistId ? "(Unallocated)" : ""}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -148,9 +166,13 @@ export default function AdminDashboard() {
                                 <SelectValue placeholder="Select therapist" />
                             </SelectTrigger>
                             <SelectContent>
-                                {therapists.map((therapist) => (
-                                    <SelectItem key={therapist.id} value={therapist.id.toString()}>
-                                        {therapist.username}
+                                {sortedTherapists.map((therapist, index) => (
+                                    <SelectItem 
+                                        key={therapist.id} 
+                                        value={therapist.id.toString()}
+                                        className={index < 3 ? "bg-muted" : ""}
+                                    >
+                                        {therapist.username} ({therapist.patientCount} patients)
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -161,7 +183,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-8">
-            <div>
+                <div>
                     <h2 className="text-2xl font-bold mb-4">Supervisors</h2>
                     <UserTable users={supervisors} userType="supervisor" onViewMore={handleViewMore} />
                 </div>

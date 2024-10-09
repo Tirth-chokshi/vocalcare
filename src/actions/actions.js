@@ -149,7 +149,6 @@ export async function createUser(formData) {
   }
 }
 
-
 export async function fetchTherapists() {
   try {
     const therapists = await prisma.user.findMany({
@@ -158,21 +157,29 @@ export async function fetchTherapists() {
         id: true,
         username: true,
         email: true,
-        therapist: true
+        therapist: {
+          include: {
+            patients: {
+              select: {
+                id: true
+              }
+            }
+          }
+        }
       }
     });
     return therapists.map(t => ({
       id: t.id,
       username: t.username,
       email: t.email,
-      ...t.therapist
+      ...t.therapist,
+      patientCount: t.therapist.patients.length
     }));
   } catch (error) {
     console.error('Error fetching therapists:', error);
     return [];
   }
 }
-
 
 export async function fetchPatients() {
   try {
@@ -182,6 +189,7 @@ export async function fetchPatients() {
         id: true,
         username: true,
         email: true,
+        createdAt: true,
         patient: {
           include: {
             assignedTherapist: {
@@ -201,7 +209,9 @@ export async function fetchPatients() {
       id: p.id,
       username: p.username,
       email: p.email,
-      ...p.patient
+      createdAt: p.createdAt,
+      ...p.patient,
+      therapistId: p.patient.assignedTherapist?.id || null
     }));
   } catch (error) {
     console.error('Error fetching patients:', error);
